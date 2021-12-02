@@ -6,10 +6,11 @@
 public/bundle.js
 public/bundle.css
 public/bundle.js.map
-
-
 .DS_Store
-package.lock.json
+package-lock.json
 public/bundle.js
 public/bundle.js.map
 public/bundle.css
+public/App.js
+public/App.js
+public/bundle.js
