@@ -2,7 +2,7 @@
 /public/build/
 
 .DS_Store
-/public/bundle.js
-/public/bundle.css
-/public/bundle.js.css
 package.lock.json
+public/bundle.js
+public/bundle.js.map
+public/bundle.css
