@@ -7,7 +7,7 @@
   let reqdata = [];
 
   function send(e){
-    let f = filters.parseInt();
+    let f = parseInt(filters);
     const filter_all = ["SAUVE", "SAUVETEUR","SAUVETAGE","BATEAU"];
     let filter_tab = [];
     let i;
@@ -25,7 +25,9 @@
            body: JSON.stringify(data)
     };
     fetch("/api/search", option).then(function(res){
-      console.log(res);
+      res.json().then((json)=>{
+        reqdata = json;
+      });
     });
   }
 
