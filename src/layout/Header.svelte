@@ -6,8 +6,7 @@
     <img
      src="./img/corsaire.png"
      alt="logo corsaire dunkerquois">
-        <form>
-        </form>
+    <SearchBar />
 </header>
 
 <style>
