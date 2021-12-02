@@ -9,3 +9,7 @@ public/bundle.js.map
 
 
 .DS_Store
+package.lock.json
+public/bundle.js
+public/bundle.js.map
+public/bundle.css
