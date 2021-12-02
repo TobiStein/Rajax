@@ -25,7 +25,7 @@
         });
 
     </script>--->
-    <script>
+    <!---<script>
         let data = {log_id : "Admin", log_pswd : "Bonjour"};
         let option = {
             method: 'POST', // *GET, POST, PUT, DELETE, etc.
@@ -35,6 +35,20 @@
             body: JSON.stringify(data)
         };
         fetch("/api/admin/", option).then(function(response){
+            console.log(response);
+        });
+
+    </script>--->
+    <script>
+        let data = {nom : "Stalingrad", desc : "wewe l'info", type :"triple catamaran"};
+        let option = {
+            method: 'POST', // *GET, POST, PUT, DELETE, etc.
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        };
+        fetch("/api/add/bateau", option).then(function(response){
             console.log(response);
         });
 
