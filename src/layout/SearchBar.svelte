@@ -34,6 +34,9 @@
   #search_filter_box:checked + div{
     display: block;
   }
+  input{
+    font-size: 4vh;
+  }
   input[type='checkbox'] {
     display: none;
   }

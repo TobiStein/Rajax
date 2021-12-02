@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const search = require('./search.js');
+const log = require('./log.js');
 const bodyParser = require('body-parser');
 
 
@@ -8,6 +9,7 @@ const bodyParser = require('body-parser');
 router.use(bodyParser.urlencoded({extended:false}));
 router.use(bodyParser.json());
 
+router.use(log)
 router.use(search)
 
 /*HEADER*/
