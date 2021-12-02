@@ -25,14 +25,6 @@
     function safe_not_equal(a, b) {
         return a != a ? b == b : a !== b || ((a && typeof a === 'object') || typeof a === 'function');
     }
-    let src_url_equal_anchor;
-    function src_url_equal(element_src, url) {
-        if (!src_url_equal_anchor) {
-            src_url_equal_anchor = document.createElement('a');
-        }
-        src_url_equal_anchor.href = url;
-        return element_src === src_url_equal_anchor.href;
-    }
     function is_empty(obj) {
         return Object.keys(obj).length === 0;
     }
@@ -98,14 +90,6 @@
             if (k[0] !== '$')
                 result[k] = props[k];
         return result;
-    }
-    function compute_rest_props(props, keys) {
-        const rest = {};
-        keys = new Set(keys);
-        for (const k in props)
-            if (!keys.has(k) && k[0] !== '$')
-                rest[k] = props[k];
-        return rest;
     }
 
     // Track which nodes are claimed during hydration. Unclaimed nodes can then be removed from the DOM
@@ -256,36 +240,11 @@
     function empty() {
         return text('');
     }
-    function listen(node, event, handler, options) {
-        node.addEventListener(event, handler, options);
-        return () => node.removeEventListener(event, handler, options);
-    }
     function attr(node, attribute, value) {
         if (value == null)
             node.removeAttribute(attribute);
         else if (node.getAttribute(attribute) !== value)
             node.setAttribute(attribute, value);
-    }
-    function set_attributes(node, attributes) {
-        // @ts-ignore
-        const descriptors = Object.getOwnPropertyDescriptors(node.__proto__);
-        for (const key in attributes) {
-            if (attributes[key] == null) {
-                node.removeAttribute(key);
-            }
-            else if (key === 'style') {
-                node.style.cssText = attributes[key];
-            }
-            else if (key === '__value') {
-                node.value = node[key] = attributes[key];
-            }
-            else if (descriptors[key] && descriptors[key].set) {
-                node[key] = attributes[key];
-            }
-            else {
-                attr(node, key, attributes[key]);
-            }
-        }
     }
     function children(element) {
         return Array.from(element.childNodes);
@@ -378,11 +337,6 @@
     function claim_space(nodes) {
         return claim_text(nodes, ' ');
     }
-    function custom_event(type, detail, bubbles = false) {
-        const e = document.createEvent('CustomEvent');
-        e.initCustomEvent(type, bubbles, false, detail);
-        return e;
-    }
 
     let current_component;
     function set_current_component(component) {
@@ -398,20 +352,6 @@
     }
     function onDestroy(fn) {
         get_current_component().$$.on_destroy.push(fn);
-    }
-    function createEventDispatcher() {
-        const component = get_current_component();
-        return (type, detail) => {
-            const callbacks = component.$$.callbacks[type];
-            if (callbacks) {
-                // TODO are there situations where events could be dispatched
-                // in a server (non-DOM) environment?
-                const event = custom_event(type, detail);
-                callbacks.slice().forEach(fn => {
-                    fn.call(component, event);
-                });
-            }
-        };
     }
     function setContext(key, context) {
         get_current_component().$$.context.set(key, context);
@@ -898,7 +838,6 @@
         window.document.createElement
     );
     const globalHistory = createHistory(canUseDOM ? window : createMemorySource());
-    const { navigate } = globalHistory;
 
     /**
      * Adapted from https://github.com/reach/router/blob/b60e6dd781d5d3a4bdaaf4de665649c0f6a7e78d/src/lib/utils.js
@@ -913,16 +852,6 @@
     const DYNAMIC_POINTS = 2;
     const SPLAT_PENALTY = 1;
     const ROOT_POINTS = 1;
-
-    /**
-     * Check if `string` starts with `search`
-     * @param {string} string
-     * @param {string} search
-     * @return {boolean}
-     */
-    function startsWith(string, search) {
-      return string.substr(0, search.length) === search;
-    }
 
     /**
      * Check if `segment` is a root segment
@@ -1130,86 +1059,6 @@
     }
 
     /**
-     * Add the query to the pathname if a query is given
-     * @param {string} pathname
-     * @param {string} [query]
-     * @return {string}
-     */
-    function addQuery(pathname, query) {
-      return pathname + (query ? `?${query}` : "");
-    }
-
-    /**
-     * Resolve URIs as though every path is a directory, no files. Relative URIs
-     * in the browser can feel awkward because not only can you be "in a directory",
-     * you can be "at a file", too. For example:
-     *
-     *  browserSpecResolve('foo', '/bar/') => /bar/foo
-     *  browserSpecResolve('foo', '/bar') => /foo
-     *
-     * But on the command line of a file system, it's not as complicated. You can't
-     * `cd` from a file, only directories. This way, links have to know less about
-     * their current path. To go deeper you can do this:
-     *
-     *  <Link to="deeper"/>
-     *  // instead of
-     *  <Link to=`{${props.uri}/deeper}`/>
-     *
-     * Just like `cd`, if you want to go deeper from the command line, you do this:
-     *
-     *  cd deeper
-     *  # not
-     *  cd $(pwd)/deeper
-     *
-     * By treating every path as a directory, linking to relative paths should
-     * require less contextual information and (fingers crossed) be more intuitive.
-     * @param {string} to
-     * @param {string} base
-     * @return {string}
-     */
-    function resolve(to, base) {
-      // /foo/bar, /baz/qux => /foo/bar
-      if (startsWith(to, "/")) {
-        return to;
-      }
-
-      const [toPathname, toQuery] = to.split("?");
-      const [basePathname] = base.split("?");
-      const toSegments = segmentize(toPathname);
-      const baseSegments = segmentize(basePathname);
-
-      // ?a=b, /users?b=c => /users?a=b
-      if (toSegments[0] === "") {
-        return addQuery(basePathname, toQuery);
-      }
-
-      // profile, /users/789 => /users/789/profile
-      if (!startsWith(toSegments[0], ".")) {
-        const pathname = baseSegments.concat(toSegments).join("/");
-
-        return addQuery((basePathname === "/" ? "" : "/") + pathname, toQuery);
-      }
-
-      // ./       , /users/123 => /users/123
-      // ../      , /users/123 => /users
-      // ../..    , /users/123 => /
-      // ../../one, /a/b/c/d   => /a/b/one
-      // .././one , /a/b/c/d   => /a/b/c/one
-      const allSegments = baseSegments.concat(toSegments);
-      const segments = [];
-
-      allSegments.forEach(segment => {
-        if (segment === "..") {
-          segments.pop();
-        } else if (segment !== ".") {
-          segments.push(segment);
-        }
-      });
-
-      return addQuery("/" + segments.join("/"), toQuery);
-    }
-
-    /**
      * Combines the `basepath` and the `path` into one path.
      * @param {string} basepath
      * @param {string} path
@@ -1220,21 +1069,9 @@
   )}/`;
     }
 
-    /**
-     * Decides whether a given `event` should result in a navigation or not.
-     * @param {object} event
-     */
-    function shouldNavigate(event) {
-      return (
-        !event.defaultPrevented &&
-        event.button === 0 &&
-        !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey)
-      );
-    }
-
     /* node_modules\svelte-routing\src\Router.svelte generated by Svelte v3.44.2 */
 
-    function create_fragment$5(ctx) {
+    function create_fragment$3(ctx) {
     	let current;
     	const default_slot_template = /*#slots*/ ctx[9].default;
     	const default_slot = create_slot(default_slot_template, ctx, /*$$scope*/ ctx[8], null);
@@ -1284,7 +1121,7 @@
     	};
     }
 
-    function instance$3($$self, $$props, $$invalidate) {
+    function instance$2($$self, $$props, $$invalidate) {
     	let $location;
     	let $routes;
     	let $base;
@@ -1444,7 +1281,7 @@
     class Router extends SvelteComponent {
     	constructor(options) {
     		super();
-    		init(this, options, instance$3, create_fragment$5, safe_not_equal, { basepath: 3, url: 4 });
+    		init(this, options, instance$2, create_fragment$3, safe_not_equal, { basepath: 3, url: 4 });
     	}
     }
 
@@ -1679,7 +1516,7 @@
     	};
     }
 
-    function create_fragment$4(ctx) {
+    function create_fragment$2(ctx) {
     	let if_block_anchor;
     	let current;
     	let if_block = /*$activeRoute*/ ctx[1] !== null && /*$activeRoute*/ ctx[1].route === /*route*/ ctx[7] && create_if_block(ctx);
@@ -1738,7 +1575,7 @@
     	};
     }
 
-    function instance$2($$self, $$props, $$invalidate) {
+    function instance$1($$self, $$props, $$invalidate) {
     	let $activeRoute;
     	let $location;
     	let { $$slots: slots = {}, $$scope } = $$props;
@@ -1808,275 +1645,183 @@
     class Route extends SvelteComponent {
     	constructor(options) {
     		super();
-    		init(this, options, instance$2, create_fragment$4, safe_not_equal, { path: 8, component: 0 });
+    		init(this, options, instance$1, create_fragment$2, safe_not_equal, { path: 8, component: 0 });
     	}
     }
 
-    /* node_modules\svelte-routing\src\Link.svelte generated by Svelte v3.44.2 */
+    /* src\layout\SearchBar.svelte generated by Svelte v3.44.2 */
 
-    function create_fragment$3(ctx) {
-    	let a;
-    	let current;
-    	let mounted;
-    	let dispose;
-    	const default_slot_template = /*#slots*/ ctx[16].default;
-    	const default_slot = create_slot(default_slot_template, ctx, /*$$scope*/ ctx[15], null);
-
-    	let a_levels = [
-    		{ href: /*href*/ ctx[0] },
-    		{ "aria-current": /*ariaCurrent*/ ctx[2] },
-    		/*props*/ ctx[1],
-    		/*$$restProps*/ ctx[6]
-    	];
-
-    	let a_data = {};
-
-    	for (let i = 0; i < a_levels.length; i += 1) {
-    		a_data = assign(a_data, a_levels[i]);
-    	}
+    function create_fragment$1(ctx) {
+    	let form;
+    	let input0;
+    	let t0;
+    	let input1;
+    	let t1;
+    	let label0;
+    	let t2;
+    	let input2;
+    	let t3;
+    	let div;
+    	let input3;
+    	let label1;
+    	let t4;
+    	let t5;
+    	let input4;
+    	let label2;
+    	let t6;
+    	let t7;
+    	let input5;
+    	let label3;
+    	let t8;
+    	let t9;
+    	let input6;
+    	let label4;
+    	let t10;
 
     	return {
     		c() {
-    			a = element("a");
-    			if (default_slot) default_slot.c();
+    			form = element("form");
+    			input0 = element("input");
+    			t0 = space();
+    			input1 = element("input");
+    			t1 = space();
+    			label0 = element("label");
+    			t2 = text("Filtrer");
+    			input2 = element("input");
+    			t3 = space();
+    			div = element("div");
+    			input3 = element("input");
+    			label1 = element("label");
+    			t4 = text("Personnes sauvées");
+    			t5 = space();
+    			input4 = element("input");
+    			label2 = element("label");
+    			t6 = text("Sauveteur");
+    			t7 = space();
+    			input5 = element("input");
+    			label3 = element("label");
+    			t8 = text("Bateau");
+    			t9 = space();
+    			input6 = element("input");
+    			label4 = element("label");
+    			t10 = text("Sauvetage");
     			this.h();
     		},
     		l(nodes) {
-    			a = claim_element(nodes, "A", { href: true, "aria-current": true });
-    			var a_nodes = children(a);
-    			if (default_slot) default_slot.l(a_nodes);
-    			a_nodes.forEach(detach);
+    			form = claim_element(nodes, "FORM", {});
+    			var form_nodes = children(form);
+    			input0 = claim_element(form_nodes, "INPUT", { type: true, alt: true, placeholder: true });
+    			t0 = claim_space(form_nodes);
+    			input1 = claim_element(form_nodes, "INPUT", { type: true, alt: true });
+    			t1 = claim_space(form_nodes);
+    			label0 = claim_element(form_nodes, "LABEL", { for: true });
+    			var label0_nodes = children(label0);
+    			t2 = claim_text(label0_nodes, "Filtrer");
+    			label0_nodes.forEach(detach);
+
+    			input2 = claim_element(form_nodes, "INPUT", {
+    				alt: true,
+    				id: true,
+    				type: true,
+    				class: true
+    			});
+
+    			t3 = claim_space(form_nodes);
+    			div = claim_element(form_nodes, "DIV", { class: true });
+    			var div_nodes = children(div);
+    			input3 = claim_element(div_nodes, "INPUT", { type: true, id: true, alt: true });
+    			label1 = claim_element(div_nodes, "LABEL", { for: true });
+    			var label1_nodes = children(label1);
+    			t4 = claim_text(label1_nodes, "Personnes sauvées");
+    			label1_nodes.forEach(detach);
+    			t5 = claim_space(div_nodes);
+    			input4 = claim_element(div_nodes, "INPUT", { type: true, id: true, alt: true });
+    			label2 = claim_element(div_nodes, "LABEL", { for: true });
+    			var label2_nodes = children(label2);
+    			t6 = claim_text(label2_nodes, "Sauveteur");
+    			label2_nodes.forEach(detach);
+    			t7 = claim_space(div_nodes);
+    			input5 = claim_element(div_nodes, "INPUT", { type: true, id: true });
+    			label3 = claim_element(div_nodes, "LABEL", { for: true });
+    			var label3_nodes = children(label3);
+    			t8 = claim_text(label3_nodes, "Bateau");
+    			label3_nodes.forEach(detach);
+    			t9 = claim_space(div_nodes);
+    			input6 = claim_element(div_nodes, "INPUT", { type: true, id: true });
+    			label4 = claim_element(div_nodes, "LABEL", { for: true });
+    			var label4_nodes = children(label4);
+    			t10 = claim_text(label4_nodes, "Sauvetage");
+    			label4_nodes.forEach(detach);
+    			div_nodes.forEach(detach);
+    			form_nodes.forEach(detach);
     			this.h();
     		},
     		h() {
-    			set_attributes(a, a_data);
+    			attr(input0, "type", "texte");
+    			attr(input0, "alt", "Champ de recherche d'une archive");
+    			input0.value = "";
+    			attr(input0, "placeholder", "Entrez votre recherche");
+    			attr(input1, "type", "button");
+    			attr(input1, "alt", "Valider la recherche");
+    			input1.value = "🔍";
+    			attr(label0, "for", "search_filter_box");
+    			attr(input2, "alt", "Activer pour filtrer la recherche");
+    			attr(input2, "id", "search_filter_box");
+    			attr(input2, "type", "checkbox");
+    			attr(input2, "class", "svelte-biaex5");
+    			attr(input3, "type", "checkbox");
+    			attr(input3, "id", "filtre_sauve");
+    			attr(input3, "alt", "Inclure les sauvetages");
+    			attr(label1, "for", "filtre_sauve");
+    			attr(input4, "type", "checkbox");
+    			attr(input4, "id", "filtre_sauveteur");
+    			attr(input4, "alt", "Inclure les sauveteur");
+    			attr(label2, "for", "filtre_sauveteur");
+    			attr(input5, "type", "checkbox");
+    			attr(input5, "id", "filtre_bateau");
+    			attr(label3, "for", "filtre_bateau");
+    			attr(input6, "type", "checkbox");
+    			attr(input6, "id", "filtre_sauvetage");
+    			attr(label4, "for", "filtre_sauvetage");
+    			attr(div, "class", "svelte-biaex5");
     		},
     		m(target, anchor) {
-    			insert_hydration(target, a, anchor);
-
-    			if (default_slot) {
-    				default_slot.m(a, null);
-    			}
-
-    			current = true;
-
-    			if (!mounted) {
-    				dispose = listen(a, "click", /*onClick*/ ctx[5]);
-    				mounted = true;
-    			}
-    		},
-    		p(ctx, [dirty]) {
-    			if (default_slot) {
-    				if (default_slot.p && (!current || dirty & /*$$scope*/ 32768)) {
-    					update_slot_base(
-    						default_slot,
-    						default_slot_template,
-    						ctx,
-    						/*$$scope*/ ctx[15],
-    						!current
-    						? get_all_dirty_from_scope(/*$$scope*/ ctx[15])
-    						: get_slot_changes(default_slot_template, /*$$scope*/ ctx[15], dirty, null),
-    						null
-    					);
-    				}
-    			}
-
-    			set_attributes(a, a_data = get_spread_update(a_levels, [
-    				(!current || dirty & /*href*/ 1) && { href: /*href*/ ctx[0] },
-    				(!current || dirty & /*ariaCurrent*/ 4) && { "aria-current": /*ariaCurrent*/ ctx[2] },
-    				dirty & /*props*/ 2 && /*props*/ ctx[1],
-    				dirty & /*$$restProps*/ 64 && /*$$restProps*/ ctx[6]
-    			]));
-    		},
-    		i(local) {
-    			if (current) return;
-    			transition_in(default_slot, local);
-    			current = true;
-    		},
-    		o(local) {
-    			transition_out(default_slot, local);
-    			current = false;
-    		},
-    		d(detaching) {
-    			if (detaching) detach(a);
-    			if (default_slot) default_slot.d(detaching);
-    			mounted = false;
-    			dispose();
-    		}
-    	};
-    }
-
-    function instance$1($$self, $$props, $$invalidate) {
-    	let ariaCurrent;
-    	const omit_props_names = ["to","replace","state","getProps"];
-    	let $$restProps = compute_rest_props($$props, omit_props_names);
-    	let $location;
-    	let $base;
-    	let { $$slots: slots = {}, $$scope } = $$props;
-    	let { to = "#" } = $$props;
-    	let { replace = false } = $$props;
-    	let { state = {} } = $$props;
-    	let { getProps = () => ({}) } = $$props;
-    	const { base } = getContext(ROUTER);
-    	component_subscribe($$self, base, value => $$invalidate(14, $base = value));
-    	const location = getContext(LOCATION);
-    	component_subscribe($$self, location, value => $$invalidate(13, $location = value));
-    	const dispatch = createEventDispatcher();
-    	let href, isPartiallyCurrent, isCurrent, props;
-
-    	function onClick(event) {
-    		dispatch("click", event);
-
-    		if (shouldNavigate(event)) {
-    			event.preventDefault();
-
-    			// Don't push another entry to the history stack when the user
-    			// clicks on a Link to the page they are currently on.
-    			const shouldReplace = $location.pathname === href || replace;
-
-    			navigate(href, { state, replace: shouldReplace });
-    		}
-    	}
-
-    	$$self.$$set = $$new_props => {
-    		$$props = assign(assign({}, $$props), exclude_internal_props($$new_props));
-    		$$invalidate(6, $$restProps = compute_rest_props($$props, omit_props_names));
-    		if ('to' in $$new_props) $$invalidate(7, to = $$new_props.to);
-    		if ('replace' in $$new_props) $$invalidate(8, replace = $$new_props.replace);
-    		if ('state' in $$new_props) $$invalidate(9, state = $$new_props.state);
-    		if ('getProps' in $$new_props) $$invalidate(10, getProps = $$new_props.getProps);
-    		if ('$$scope' in $$new_props) $$invalidate(15, $$scope = $$new_props.$$scope);
-    	};
-
-    	$$self.$$.update = () => {
-    		if ($$self.$$.dirty & /*to, $base*/ 16512) {
-    			$$invalidate(0, href = to === "/" ? $base.uri : resolve(to, $base.uri));
-    		}
-
-    		if ($$self.$$.dirty & /*$location, href*/ 8193) {
-    			$$invalidate(11, isPartiallyCurrent = startsWith($location.pathname, href));
-    		}
-
-    		if ($$self.$$.dirty & /*href, $location*/ 8193) {
-    			$$invalidate(12, isCurrent = href === $location.pathname);
-    		}
-
-    		if ($$self.$$.dirty & /*isCurrent*/ 4096) {
-    			$$invalidate(2, ariaCurrent = isCurrent ? "page" : undefined);
-    		}
-
-    		if ($$self.$$.dirty & /*getProps, $location, href, isPartiallyCurrent, isCurrent*/ 15361) {
-    			$$invalidate(1, props = getProps({
-    				location: $location,
-    				href,
-    				isPartiallyCurrent,
-    				isCurrent
-    			}));
-    		}
-    	};
-
-    	return [
-    		href,
-    		props,
-    		ariaCurrent,
-    		base,
-    		location,
-    		onClick,
-    		$$restProps,
-    		to,
-    		replace,
-    		state,
-    		getProps,
-    		isPartiallyCurrent,
-    		isCurrent,
-    		$location,
-    		$base,
-    		$$scope,
-    		slots
-    	];
-    }
-
-    class Link extends SvelteComponent {
-    	constructor(options) {
-    		super();
-
-    		init(this, options, instance$1, create_fragment$3, safe_not_equal, {
-    			to: 7,
-    			replace: 8,
-    			state: 9,
-    			getProps: 10
-    		});
-    	}
-    }
-
-    /* src\routes\Home.svelte generated by Svelte v3.44.2 */
-
-    function create_fragment$2(ctx) {
-    	let h1;
-    	let t;
-
-    	return {
-    		c() {
-    			h1 = element("h1");
-    			t = text("Home");
-    		},
-    		l(nodes) {
-    			h1 = claim_element(nodes, "H1", {});
-    			var h1_nodes = children(h1);
-    			t = claim_text(h1_nodes, "Home");
-    			h1_nodes.forEach(detach);
-    		},
-    		m(target, anchor) {
-    			insert_hydration(target, h1, anchor);
-    			append_hydration(h1, t);
+    			insert_hydration(target, form, anchor);
+    			append_hydration(form, input0);
+    			append_hydration(form, t0);
+    			append_hydration(form, input1);
+    			append_hydration(form, t1);
+    			append_hydration(form, label0);
+    			append_hydration(label0, t2);
+    			append_hydration(form, input2);
+    			append_hydration(form, t3);
+    			append_hydration(form, div);
+    			append_hydration(div, input3);
+    			append_hydration(div, label1);
+    			append_hydration(label1, t4);
+    			append_hydration(div, t5);
+    			append_hydration(div, input4);
+    			append_hydration(div, label2);
+    			append_hydration(label2, t6);
+    			append_hydration(div, t7);
+    			append_hydration(div, input5);
+    			append_hydration(div, label3);
+    			append_hydration(label3, t8);
+    			append_hydration(div, t9);
+    			append_hydration(div, input6);
+    			append_hydration(div, label4);
+    			append_hydration(label4, t10);
     		},
     		p: noop,
     		i: noop,
     		o: noop,
     		d(detaching) {
-    			if (detaching) detach(h1);
+    			if (detaching) detach(form);
     		}
     	};
     }
 
-    class Home extends SvelteComponent {
-    	constructor(options) {
-    		super();
-    		init(this, options, null, create_fragment$2, safe_not_equal, {});
-    	}
-    }
-
-    /* src\routes\About.svelte generated by Svelte v3.44.2 */
-
-    function create_fragment$1(ctx) {
-    	let h1;
-    	let t;
-
-    	return {
-    		c() {
-    			h1 = element("h1");
-    			t = text("About");
-    		},
-    		l(nodes) {
-    			h1 = claim_element(nodes, "H1", {});
-    			var h1_nodes = children(h1);
-    			t = claim_text(h1_nodes, "About");
-    			h1_nodes.forEach(detach);
-    		},
-    		m(target, anchor) {
-    			insert_hydration(target, h1, anchor);
-    			append_hydration(h1, t);
-    		},
-    		p: noop,
-    		i: noop,
-    		o: noop,
-    		d(detaching) {
-    			if (detaching) detach(h1);
-    		}
-    	};
-    }
-
-    class About extends SvelteComponent {
+    class SearchBar extends SvelteComponent {
     	constructor(options) {
     		super();
     		init(this, options, null, create_fragment$1, safe_not_equal, {});
@@ -2085,146 +1830,45 @@
 
     /* src\App.svelte generated by Svelte v3.44.2 */
 
-    function create_default_slot_4(ctx) {
-    	let t;
-
-    	return {
-    		c() {
-    			t = text("Home");
-    		},
-    		l(nodes) {
-    			t = claim_text(nodes, "Home");
-    		},
-    		m(target, anchor) {
-    			insert_hydration(target, t, anchor);
-    		},
-    		d(detaching) {
-    			if (detaching) detach(t);
-    		}
-    	};
-    }
-
-    // (13:4) <Link to="about">
-    function create_default_slot_3(ctx) {
-    	let t;
-
-    	return {
-    		c() {
-    			t = text("About");
-    		},
-    		l(nodes) {
-    			t = claim_text(nodes, "About");
-    		},
-    		m(target, anchor) {
-    			insert_hydration(target, t, anchor);
-    		},
-    		d(detaching) {
-    			if (detaching) detach(t);
-    		}
-    	};
-    }
-
-    // (14:4) <Link to="blog">
-    function create_default_slot_2(ctx) {
-    	let t;
-
-    	return {
-    		c() {
-    			t = text("Blog");
-    		},
-    		l(nodes) {
-    			t = claim_text(nodes, "Blog");
-    		},
-    		m(target, anchor) {
-    			insert_hydration(target, t, anchor);
-    		},
-    		d(detaching) {
-    			if (detaching) detach(t);
-    		}
-    	};
-    }
-
-    // (19:4) <Route path="/">
     function create_default_slot_1(ctx) {
-    	let home;
+    	let searchbar;
     	let current;
-    	home = new Home({});
+    	searchbar = new SearchBar({});
 
     	return {
     		c() {
-    			create_component(home.$$.fragment);
+    			create_component(searchbar.$$.fragment);
     		},
     		l(nodes) {
-    			claim_component(home.$$.fragment, nodes);
+    			claim_component(searchbar.$$.fragment, nodes);
     		},
     		m(target, anchor) {
-    			mount_component(home, target, anchor);
+    			mount_component(searchbar, target, anchor);
     			current = true;
     		},
     		i(local) {
     			if (current) return;
-    			transition_in(home.$$.fragment, local);
+    			transition_in(searchbar.$$.fragment, local);
     			current = true;
     		},
     		o(local) {
-    			transition_out(home.$$.fragment, local);
+    			transition_out(searchbar.$$.fragment, local);
     			current = false;
     		},
     		d(detaching) {
-    			destroy_component(home, detaching);
+    			destroy_component(searchbar, detaching);
     		}
     	};
     }
 
-    // (10:0) <Router url="{url}">
+    // (9:0) <Router url="{url}">
     function create_default_slot(ctx) {
-    	let nav;
-    	let link0;
-    	let t0;
-    	let link1;
-    	let t1;
-    	let link2;
-    	let t2;
-    	let div;
-    	let img;
-    	let img_src_value;
-    	let t3;
-    	let route0;
-    	let t4;
-    	let route1;
+    	let route;
     	let current;
 
-    	link0 = new Link({
+    	route = new Route({
     			props: {
-    				to: "/",
-    				$$slots: { default: [create_default_slot_4] },
-    				$$scope: { ctx }
-    			}
-    		});
-
-    	link1 = new Link({
-    			props: {
-    				to: "about",
-    				$$slots: { default: [create_default_slot_3] },
-    				$$scope: { ctx }
-    			}
-    		});
-
-    	link2 = new Link({
-    			props: {
-    				to: "blog",
-    				$$slots: { default: [create_default_slot_2] },
-    				$$scope: { ctx }
-    			}
-    		});
-
-    	route0 = new Route({
-    			props: { path: "about", component: About }
-    		});
-
-    	route1 = new Route({
-    			props: {
-    				path: "/",
+    				path: "debug",
     				$$slots: { default: [create_default_slot_1] },
     				$$scope: { ctx }
     			}
@@ -2232,117 +1876,35 @@
 
     	return {
     		c() {
-    			nav = element("nav");
-    			create_component(link0.$$.fragment);
-    			t0 = space();
-    			create_component(link1.$$.fragment);
-    			t1 = space();
-    			create_component(link2.$$.fragment);
-    			t2 = space();
-    			div = element("div");
-    			img = element("img");
-    			t3 = space();
-    			create_component(route0.$$.fragment);
-    			t4 = space();
-    			create_component(route1.$$.fragment);
-    			this.h();
+    			create_component(route.$$.fragment);
     		},
     		l(nodes) {
-    			nav = claim_element(nodes, "NAV", {});
-    			var nav_nodes = children(nav);
-    			claim_component(link0.$$.fragment, nav_nodes);
-    			t0 = claim_space(nav_nodes);
-    			claim_component(link1.$$.fragment, nav_nodes);
-    			t1 = claim_space(nav_nodes);
-    			claim_component(link2.$$.fragment, nav_nodes);
-    			nav_nodes.forEach(detach);
-    			t2 = claim_space(nodes);
-    			div = claim_element(nodes, "DIV", {});
-    			var div_nodes = children(div);
-    			img = claim_element(div_nodes, "IMG", { src: true, alt: true });
-    			t3 = claim_space(div_nodes);
-    			claim_component(route0.$$.fragment, div_nodes);
-    			t4 = claim_space(div_nodes);
-    			claim_component(route1.$$.fragment, div_nodes);
-    			div_nodes.forEach(detach);
-    			this.h();
-    		},
-    		h() {
-    			if (!src_url_equal(img.src, img_src_value = "./favicon.png")) attr(img, "src", img_src_value);
-    			attr(img, "alt", "");
+    			claim_component(route.$$.fragment, nodes);
     		},
     		m(target, anchor) {
-    			insert_hydration(target, nav, anchor);
-    			mount_component(link0, nav, null);
-    			append_hydration(nav, t0);
-    			mount_component(link1, nav, null);
-    			append_hydration(nav, t1);
-    			mount_component(link2, nav, null);
-    			insert_hydration(target, t2, anchor);
-    			insert_hydration(target, div, anchor);
-    			append_hydration(div, img);
-    			append_hydration(div, t3);
-    			mount_component(route0, div, null);
-    			append_hydration(div, t4);
-    			mount_component(route1, div, null);
+    			mount_component(route, target, anchor);
     			current = true;
     		},
     		p(ctx, dirty) {
-    			const link0_changes = {};
+    			const route_changes = {};
 
     			if (dirty & /*$$scope*/ 2) {
-    				link0_changes.$$scope = { dirty, ctx };
+    				route_changes.$$scope = { dirty, ctx };
     			}
 
-    			link0.$set(link0_changes);
-    			const link1_changes = {};
-
-    			if (dirty & /*$$scope*/ 2) {
-    				link1_changes.$$scope = { dirty, ctx };
-    			}
-
-    			link1.$set(link1_changes);
-    			const link2_changes = {};
-
-    			if (dirty & /*$$scope*/ 2) {
-    				link2_changes.$$scope = { dirty, ctx };
-    			}
-
-    			link2.$set(link2_changes);
-    			const route1_changes = {};
-
-    			if (dirty & /*$$scope*/ 2) {
-    				route1_changes.$$scope = { dirty, ctx };
-    			}
-
-    			route1.$set(route1_changes);
+    			route.$set(route_changes);
     		},
     		i(local) {
     			if (current) return;
-    			transition_in(link0.$$.fragment, local);
-    			transition_in(link1.$$.fragment, local);
-    			transition_in(link2.$$.fragment, local);
-    			transition_in(route0.$$.fragment, local);
-    			transition_in(route1.$$.fragment, local);
+    			transition_in(route.$$.fragment, local);
     			current = true;
     		},
     		o(local) {
-    			transition_out(link0.$$.fragment, local);
-    			transition_out(link1.$$.fragment, local);
-    			transition_out(link2.$$.fragment, local);
-    			transition_out(route0.$$.fragment, local);
-    			transition_out(route1.$$.fragment, local);
+    			transition_out(route.$$.fragment, local);
     			current = false;
     		},
     		d(detaching) {
-    			if (detaching) detach(nav);
-    			destroy_component(link0);
-    			destroy_component(link1);
-    			destroy_component(link2);
-    			if (detaching) detach(t2);
-    			if (detaching) detach(div);
-    			destroy_component(route0);
-    			destroy_component(route1);
+    			destroy_component(route, detaching);
     		}
     	};
     }

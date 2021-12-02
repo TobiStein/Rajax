@@ -17,7 +17,7 @@
 
 
 <style>
-  #search_filter_box +div{
+  #search_filter_box + div{
     display:none;
   }
   #search_filter_box:checked + div{

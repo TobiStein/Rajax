@@ -23,19 +23,6 @@ function subscribe(store, ...callbacks) {
     const unsub = store.subscribe(...callbacks);
     return unsub.unsubscribe ? () => unsub.unsubscribe() : unsub;
 }
-function compute_rest_props(props, keys) {
-    const rest = {};
-    keys = new Set(keys);
-    for (const k in props)
-        if (!keys.has(k) && k[0] !== '$')
-            rest[k] = props[k];
-    return rest;
-}
-function custom_event(type, detail, bubbles = false) {
-    const e = document.createEvent('CustomEvent');
-    e.initCustomEvent(type, bubbles, false, detail);
-    return e;
-}
 
 let current_component;
 function set_current_component(component) {
@@ -52,20 +39,6 @@ function onMount(fn) {
 function onDestroy(fn) {
     get_current_component().$$.on_destroy.push(fn);
 }
-function createEventDispatcher() {
-    const component = get_current_component();
-    return (type, detail) => {
-        const callbacks = component.$$.callbacks[type];
-        if (callbacks) {
-            // TODO are there situations where events could be dispatched
-            // in a server (non-DOM) environment?
-            const event = custom_event(type, detail);
-            callbacks.slice().forEach(fn => {
-                fn.call(component, event);
-            });
-        }
-    };
-}
 function setContext(key, context) {
     get_current_component().$$.context.set(key, context);
 }
@@ -73,85 +46,6 @@ function getContext(key) {
     return get_current_component().$$.context.get(key);
 }
 Promise.resolve();
-
-// source: https://html.spec.whatwg.org/multipage/indices.html
-const boolean_attributes = new Set([
-    'allowfullscreen',
-    'allowpaymentrequest',
-    'async',
-    'autofocus',
-    'autoplay',
-    'checked',
-    'controls',
-    'default',
-    'defer',
-    'disabled',
-    'formnovalidate',
-    'hidden',
-    'ismap',
-    'loop',
-    'multiple',
-    'muted',
-    'nomodule',
-    'novalidate',
-    'open',
-    'playsinline',
-    'readonly',
-    'required',
-    'reversed',
-    'selected'
-]);
-
-const invalid_attribute_name_character = /[\s'">/=\u{FDD0}-\u{FDEF}\u{FFFE}\u{FFFF}\u{1FFFE}\u{1FFFF}\u{2FFFE}\u{2FFFF}\u{3FFFE}\u{3FFFF}\u{4FFFE}\u{4FFFF}\u{5FFFE}\u{5FFFF}\u{6FFFE}\u{6FFFF}\u{7FFFE}\u{7FFFF}\u{8FFFE}\u{8FFFF}\u{9FFFE}\u{9FFFF}\u{AFFFE}\u{AFFFF}\u{BFFFE}\u{BFFFF}\u{CFFFE}\u{CFFFF}\u{DFFFE}\u{DFFFF}\u{EFFFE}\u{EFFFF}\u{FFFFE}\u{FFFFF}\u{10FFFE}\u{10FFFF}]/u;
-// https://html.spec.whatwg.org/multipage/syntax.html#attributes-2
-// https://infra.spec.whatwg.org/#noncharacter
-function spread(args, classes_to_add) {
-    const attributes = Object.assign({}, ...args);
-    if (classes_to_add) {
-        if (attributes.class == null) {
-            attributes.class = classes_to_add;
-        }
-        else {
-            attributes.class += ' ' + classes_to_add;
-        }
-    }
-    let str = '';
-    Object.keys(attributes).forEach(name => {
-        if (invalid_attribute_name_character.test(name))
-            return;
-        const value = attributes[name];
-        if (value === true)
-            str += ' ' + name;
-        else if (boolean_attributes.has(name.toLowerCase())) {
-            if (value)
-                str += ' ' + name;
-        }
-        else if (value != null) {
-            str += ` ${name}="${value}"`;
-        }
-    });
-    return str;
-}
-const escaped = {
-    '"': '&quot;',
-    "'": '&#39;',
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;'
-};
-function escape(html) {
-    return String(html).replace(/["'&<>]/g, match => escaped[match]);
-}
-function escape_attribute_value(value) {
-    return typeof value === 'string' ? escape(value) : value;
-}
-function escape_object(obj) {
-    const result = {};
-    for (const key in obj) {
-        result[key] = escape_attribute_value(obj[key]);
-    }
-    return result;
-}
 const missing_component = {
     $$render: () => ''
 };
@@ -423,16 +317,6 @@ const SPLAT_PENALTY = 1;
 const ROOT_POINTS = 1;
 
 /**
- * Check if `string` starts with `search`
- * @param {string} string
- * @param {string} search
- * @return {boolean}
- */
-function startsWith(string, search) {
-  return string.substr(0, search.length) === search;
-}
-
-/**
  * Check if `segment` is a root segment
  * @param {string} segment
  * @return {boolean}
@@ -635,86 +519,6 @@ function pick(routes, uri) {
  */
 function match(route, uri) {
   return pick([route], uri);
-}
-
-/**
- * Add the query to the pathname if a query is given
- * @param {string} pathname
- * @param {string} [query]
- * @return {string}
- */
-function addQuery(pathname, query) {
-  return pathname + (query ? `?${query}` : "");
-}
-
-/**
- * Resolve URIs as though every path is a directory, no files. Relative URIs
- * in the browser can feel awkward because not only can you be "in a directory",
- * you can be "at a file", too. For example:
- *
- *  browserSpecResolve('foo', '/bar/') => /bar/foo
- *  browserSpecResolve('foo', '/bar') => /foo
- *
- * But on the command line of a file system, it's not as complicated. You can't
- * `cd` from a file, only directories. This way, links have to know less about
- * their current path. To go deeper you can do this:
- *
- *  <Link to="deeper"/>
- *  // instead of
- *  <Link to=`{${props.uri}/deeper}`/>
- *
- * Just like `cd`, if you want to go deeper from the command line, you do this:
- *
- *  cd deeper
- *  # not
- *  cd $(pwd)/deeper
- *
- * By treating every path as a directory, linking to relative paths should
- * require less contextual information and (fingers crossed) be more intuitive.
- * @param {string} to
- * @param {string} base
- * @return {string}
- */
-function resolve(to, base) {
-  // /foo/bar, /baz/qux => /foo/bar
-  if (startsWith(to, "/")) {
-    return to;
-  }
-
-  const [toPathname, toQuery] = to.split("?");
-  const [basePathname] = base.split("?");
-  const toSegments = segmentize(toPathname);
-  const baseSegments = segmentize(basePathname);
-
-  // ?a=b, /users?b=c => /users?a=b
-  if (toSegments[0] === "") {
-    return addQuery(basePathname, toQuery);
-  }
-
-  // profile, /users/789 => /users/789/profile
-  if (!startsWith(toSegments[0], ".")) {
-    const pathname = baseSegments.concat(toSegments).join("/");
-
-    return addQuery((basePathname === "/" ? "" : "/") + pathname, toQuery);
-  }
-
-  // ./       , /users/123 => /users/123
-  // ../      , /users/123 => /users
-  // ../..    , /users/123 => /
-  // ../../one, /a/b/c/d   => /a/b/one
-  // .././one , /a/b/c/d   => /a/b/c/one
-  const allSegments = baseSegments.concat(toSegments);
-  const segments = [];
-
-  allSegments.forEach(segment => {
-    if (segment === "..") {
-      segments.pop();
-    } else if (segment !== ".") {
-      segments.push(segment);
-    }
-  });
-
-  return addQuery("/" + segments.join("/"), toQuery);
 }
 
 /**
@@ -926,63 +730,24 @@ const Route = create_ssr_component(($$result, $$props, $$bindings, slots) => {
 	: ``}`;
 });
 
-/* node_modules\svelte-routing\src\Link.svelte generated by Svelte v3.44.2 */
+/* src\layout\SearchBar.svelte generated by Svelte v3.44.2 */
 
-const Link = create_ssr_component(($$result, $$props, $$bindings, slots) => {
-	let ariaCurrent;
-	let $$restProps = compute_rest_props($$props, ["to","replace","state","getProps"]);
-	let $location, $$unsubscribe_location;
-	let $base, $$unsubscribe_base;
-	let { to = "#" } = $$props;
-	let { replace = false } = $$props;
-	let { state = {} } = $$props;
-	let { getProps = () => ({}) } = $$props;
-	const { base } = getContext(ROUTER);
-	$$unsubscribe_base = subscribe(base, value => $base = value);
-	const location = getContext(LOCATION);
-	$$unsubscribe_location = subscribe(location, value => $location = value);
-	createEventDispatcher();
-	let href, isPartiallyCurrent, isCurrent, props;
+const css = {
+	code: "#search_filter_box.svelte-biaex5+div.svelte-biaex5{display:none}#search_filter_box.svelte-biaex5:checked+div.svelte-biaex5{display:block}",
+	map: "{\"version\":3,\"file\":\"SearchBar.svelte\",\"sources\":[\"SearchBar.svelte\"],\"sourcesContent\":[\"<script>\\r\\n  let query = \\\"\\\";\\r\\n\\r\\n</script>\\r\\n\\r\\n<form>\\r\\n  <input type=\\\"texte\\\" alt=\\\"Champ de recherche d'une archive\\\" value=\\\"\\\" placeholder=\\\"Entrez votre recherche\\\" />\\r\\n  <input type=\\\"button\\\" alt=\\\"Valider la recherche\\\" value=\\\"🔍\\\" />\\r\\n  <label for=\\\"search_filter_box\\\">Filtrer</label><input alt=\\\"Activer pour filtrer la recherche\\\" id=\\\"search_filter_box\\\" type=\\\"checkbox\\\" />\\r\\n  <div>\\r\\n    <input type=\\\"checkbox\\\" id=\\\"filtre_sauve\\\" alt=\\\"Inclure les sauvetages\\\" /><label for=\\\"filtre_sauve\\\" >Personnes sauvées</label>\\r\\n    <input type=\\\"checkbox\\\" id=\\\"filtre_sauveteur\\\" alt=\\\"Inclure les sauveteur\\\" /><label for=\\\"filtre_sauveteur\\\" >Sauveteur</label>\\r\\n    <input type=\\\"checkbox\\\" id=\\\"filtre_bateau\\\" /><label for=\\\"filtre_bateau\\\" >Bateau</label>\\r\\n    <input type=\\\"checkbox\\\" id=\\\"filtre_sauvetage\\\" /><label for=\\\"filtre_sauvetage\\\" >Sauvetage</label>\\r\\n  </div>\\r\\n</form>\\r\\n\\r\\n\\r\\n<style>\\r\\n  #search_filter_box + div{\\r\\n    display:none;\\r\\n  }\\r\\n  #search_filter_box:checked + div{\\r\\n    display: block;\\r\\n  }\\r\\n</style>\\r\\n\"],\"names\":[],\"mappings\":\"AAmBE,gCAAkB,CAAG,iBAAG,CAAC,AACvB,QAAQ,IAAI,AACd,CAAC,AACD,gCAAkB,QAAQ,CAAG,iBAAG,CAAC,AAC/B,OAAO,CAAE,KAAK,AAChB,CAAC\"}"
+};
 
-	if ($$props.to === void 0 && $$bindings.to && to !== void 0) $$bindings.to(to);
-	if ($$props.replace === void 0 && $$bindings.replace && replace !== void 0) $$bindings.replace(replace);
-	if ($$props.state === void 0 && $$bindings.state && state !== void 0) $$bindings.state(state);
-	if ($$props.getProps === void 0 && $$bindings.getProps && getProps !== void 0) $$bindings.getProps(getProps);
-	href = to === "/" ? $base.uri : resolve(to, $base.uri);
-	isPartiallyCurrent = startsWith($location.pathname, href);
-	isCurrent = href === $location.pathname;
-	ariaCurrent = isCurrent ? "page" : undefined;
+const SearchBar = create_ssr_component(($$result, $$props, $$bindings, slots) => {
+	$$result.css.add(css);
 
-	props = getProps({
-		location: $location,
-		href,
-		isPartiallyCurrent,
-		isCurrent
-	});
-
-	$$unsubscribe_location();
-	$$unsubscribe_base();
-
-	return `<a${spread([
-		{ href: escape_attribute_value(href) },
-		{
-			"aria-current": escape_attribute_value(ariaCurrent)
-		},
-		escape_object(props),
-		escape_object($$restProps)
-	])}>${slots.default ? slots.default({}) : ``}</a>`;
-});
-
-/* src\routes\Home.svelte generated by Svelte v3.44.2 */
-
-const Home = create_ssr_component(($$result, $$props, $$bindings, slots) => {
-	return `<h1>Home</h1>`;
-});
-
-/* src\routes\About.svelte generated by Svelte v3.44.2 */
-
-const About = create_ssr_component(($$result, $$props, $$bindings, slots) => {
-	return `<h1>About</h1>`;
+	return `<form><input type="${"texte"}" alt="${"Champ de recherche d'une archive"}" value="${""}" placeholder="${"Entrez votre recherche"}">
+  <input type="${"button"}" alt="${"Valider la recherche"}" value="${"🔍"}">
+  <label for="${"search_filter_box"}">Filtrer</label><input alt="${"Activer pour filtrer la recherche"}" id="${"search_filter_box"}" type="${"checkbox"}" class="${"svelte-biaex5"}">
+  <div class="${"svelte-biaex5"}"><input type="${"checkbox"}" id="${"filtre_sauve"}" alt="${"Inclure les sauvetages"}"><label for="${"filtre_sauve"}">Personnes sauvées</label>
+    <input type="${"checkbox"}" id="${"filtre_sauveteur"}" alt="${"Inclure les sauveteur"}"><label for="${"filtre_sauveteur"}">Sauveteur</label>
+    <input type="${"checkbox"}" id="${"filtre_bateau"}"><label for="${"filtre_bateau"}">Bateau</label>
+    <input type="${"checkbox"}" id="${"filtre_sauvetage"}"><label for="${"filtre_sauvetage"}">Sauvetage</label></div>
+</form>`;
 });
 
 /* src\App.svelte generated by Svelte v3.44.2 */
@@ -995,14 +760,9 @@ const App = create_ssr_component(($$result, $$props, $$bindings, slots) => {
 
 
 ${validate_component(Router, "Router").$$render($$result, { url }, {}, {
-		default: () => `<nav>${validate_component(Link, "Link").$$render($$result, { to: "/" }, {}, { default: () => `Home` })}
-    ${validate_component(Link, "Link").$$render($$result, { to: "about" }, {}, { default: () => `About` })}
-    ${validate_component(Link, "Link").$$render($$result, { to: "blog" }, {}, { default: () => `Blog` })}</nav>
-  <div><img src="${"./favicon.png"}" alt="${""}">
-    ${validate_component(Route, "Route").$$render($$result, { path: "about", component: About }, {}, {})}
-    ${validate_component(Route, "Route").$$render($$result, { path: "/" }, {}, {
-			default: () => `${validate_component(Home, "Home").$$render($$result, {}, {}, {})}`
-		})}</div>`
+		default: () => `${validate_component(Route, "Route").$$render($$result, { path: "debug" }, {}, {
+			default: () => `${validate_component(SearchBar, "Searchbar").$$render($$result, {}, {}, {})}`
+		})}`
 	})}`;
 });
 
