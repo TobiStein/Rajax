@@ -12,40 +12,37 @@ let db = new sqlite3.Database('./bdd.db', (err) => {
 
 });
 
-/*let sql = 'SELECT * FROM BATEAU';
-
-db.all(sql, [], (err, rows) => {
-    if (err){
-        throw err;
-    }
-
-    console.log(rows);
-});*/
-
-//{types:["test", "bonjou"], search : "la recherche"}
 router.post("/search", (req, res) => {
     let resp = [];
     let data = {
         types : req.body.types,
-        search : req.body.search
+        search : [req.body.search].concat(req.body.search.split(' '))
     };
-    //console.log(data);
 
     let next = (resp, index_element, data) => {
         let element = data.types;
         var SQL = undefined
         if (element[index_element] == "BATEAU"){
-            var SQL = 'SELECT Nom as title, Description as desc FROM BATEAU'
+            var SQL = "SELECT id, Nom as title, Description as desc FROM BATEAU"
         } else if (element[index_element] == "SAUVE"){
-            var SQL = 'SELECT Nom as title, Prenom, Description as desc  FROM PERSONNE'
+            var SQL = "SELECT id, Nom as title, Prenom, Description as desc FROM PERSONNE"
         } else if (element[index_element] == "SAUVETEUR"){
-            var SQL = 'SELECT Nom as title, Prenom, Description as desc  FROM PERSONNE'    
+            var SQL = "SELECT id, Nom as title, Prenom, Description as desc FROM PERSONNE"
         } else if (element[index_element] == "SAUVETAGE"){
-            var SQL = 'SELECT Nom as title, Description as desc FROM EVENT'
+            var SQL = "SELECT id, Nom as title, Description as desc FROM EVENT"
         }
         if (SQL){
-            db.all(SQL, [], (err, rows) => {
+            SQL += " WHERE " 
+
+            for (var i=0; i<data.search.length; i++){
+                SQL += "lower(Nom || Description) LIKE '%' || ? || '%' OR "
+            }
+
+            SQL = SQL.substring(0, SQL.length - 3);
+             
+            db.all(SQL, data.search, (err, rows) => {
                 if (err){
+                    console.log("err", SQL);
                     throw err;
                 }
                 rows.forEach((elt) =>{
@@ -71,6 +68,41 @@ router.post("/search", (req, res) => {
 
     //console.log(resp);
     //res.send("Bonjour");
+});
+
+router.get("/query/*/*", (req, res) => {
+    let url_parse = req.url.split("/");
+    let type_available = ["bateau", "personne", "sauvetage"];
+    var type = url_parse[url_parse.length - 2];
+    var id = parseInt(url_parse[url_parse.length - 1]);
+    
+    if (Number.isInteger(id) && type_available.includes(type)){
+        //res.status(200).json({type: type, id:id});
+        var SQL = "SELECT * FROM";
+        if (type == "bateau"){
+            SQL += " BATEAU";
+        } else if (type == "sauvetage"){
+            SQL += " EVENT";
+        } else if (type == "personne"){
+            SQL += " PERSONNE";
+        }
+        SQL += " WHERE id = ?";
+
+        db.get(SQL, [id], (err, row) => {
+            if (err) {
+                throw err;
+            }
+            if (row){
+                res.status(200).json(row);
+            } else {
+                res.status(404).send("404");
+            }
+            
+        })
+    } else {
+        res.status(404).send("404");
+    }
+    
 });
 
 module.exports = router;
