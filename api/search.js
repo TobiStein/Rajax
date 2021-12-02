@@ -32,14 +32,14 @@ router.post("/search", (req, res) => {
             var SQL = "SELECT id, Nom as title, Description as desc FROM EVENT"
         }
         if (SQL){
-            SQL += " WHERE " 
+            SQL += " WHERE "
 
             for (var i=0; i<data.search.length; i++){
                 SQL += "lower(Nom || Description) LIKE '%' || ? || '%' OR "
             }
 
             SQL = SQL.substring(0, SQL.length - 3);
-             
+
             db.all(SQL, data.search, (err, rows) => {
                 if (err){
                     console.log("err", SQL);
@@ -52,7 +52,7 @@ router.post("/search", (req, res) => {
                     }
                     elt.type = element[index_element];
                 });
-                
+
                 resp = resp.concat(rows);
                 index_element++;
                 next(resp, index_element, data);
@@ -61,7 +61,7 @@ router.post("/search", (req, res) => {
             res.status(200).json(resp);
             console.log(resp);
         }
-        
+
     }
 
     next(resp, 0, data)
@@ -75,7 +75,7 @@ router.get("/query/*/*", (req, res) => {
     let type_available = ["bateau", "personne", "sauvetage"];
     var type = url_parse[url_parse.length - 2];
     var id = parseInt(url_parse[url_parse.length - 1]);
-    
+
     if (Number.isInteger(id) && type_available.includes(type)){
         var SQL = "SELECT * FROM";
         if (type == "bateau"){
@@ -96,12 +96,12 @@ router.get("/query/*/*", (req, res) => {
             } else {
                 res.status(404).send("404");
             }
-            
+
         })
     } else {
         res.status(404).send("404");
     }
-    
+
 });
 
 module.exports = router;
