@@ -7,7 +7,7 @@
     <title>Document</title>
 </head>
 <body>
-    <form action="http://localhost:3000/api/search" method="POST">
+    <!--<form action="http://localhost:3000/api/search" method="POST">
         <input type="text" name="name"/>
     </form>
     <script>
@@ -22,6 +22,20 @@
         fetch("/api/search", option).then(function(response){
             console.log(response);
             location.reload(true);
+        });
+
+    </script>--->
+    <script>
+        let data = {log_id : "Admin", log_pswd : "Bonjour"};
+        let option = {
+            method: 'POST', // *GET, POST, PUT, DELETE, etc.
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        };
+        fetch("/api/admin/", option).then(function(response){
+            console.log(response);
         });
 
     </script>
