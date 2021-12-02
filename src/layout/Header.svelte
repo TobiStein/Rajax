@@ -8,3 +8,10 @@
         
       </main>
 </header>
+
+<style>
+  header {
+	background-color: rgb(2, 18, 43);
+	margin : 0;
+}
+</style>
