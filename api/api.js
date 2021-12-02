@@ -1,10 +1,14 @@
 const express = require('express');
 const router = express.Router();
+const search = require('./search.js');
 const bodyParser = require('body-parser');
 
 
 /*BODY PARSER*/
+router.use(bodyParser.urlencoded({extended:false}));
 router.use(bodyParser.json());
+
+router.use(search)
 
 /*HEADER*/
 router.use((req, res, next) => {

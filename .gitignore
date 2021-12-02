@@ -1,5 +1,12 @@
 /node_modules/
 /public/build/
+/public/bundle.js
+/public/bundle.css
+/public/bundle.js.map
+public/bundle.js
+public/bundle.css
+public/bundle.js.map
+
 
 .DS_Store
 package-lock.json
