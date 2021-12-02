@@ -2,6 +2,7 @@
 <script>
   import { Router, Link, Route } from "svelte-routing";
   import Searchbar from "./layout/SearchBar.svelte";
+  import Header from "./layout/Header.svelte";
 
   export let url = "";
 </script>
