@@ -46,6 +46,23 @@ function getContext(key) {
     return get_current_component().$$.context.get(key);
 }
 Promise.resolve();
+const escaped = {
+    '"': '&quot;',
+    "'": '&#39;',
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;'
+};
+function escape(html) {
+    return String(html).replace(/["'&<>]/g, match => escaped[match]);
+}
+function each(items, fn) {
+    let str = '';
+    for (let i = 0; i < items.length; i += 1) {
+        str += fn(items[i], i);
+    }
+    return str;
+}
 const missing_component = {
     $$render: () => ''
 };
@@ -92,6 +109,11 @@ function create_ssr_component(fn) {
         },
         $$render
     };
+}
+function add_attribute(name, value, boolean) {
+    if (value == null || (boolean && !value))
+        return '';
+    return ` ${name}${value === true ? '' : `=${typeof value === 'string' ? JSON.stringify(escape(value)) : `"${value}"`}`}`;
 }
 
 const subscriber_queue = [];
@@ -734,20 +756,66 @@ const Route = create_ssr_component(($$result, $$props, $$bindings, slots) => {
 
 const css = {
 	code: "#search_filter_box.svelte-biaex5+div.svelte-biaex5{display:none}#search_filter_box.svelte-biaex5:checked+div.svelte-biaex5{display:block}",
-	map: "{\"version\":3,\"file\":\"SearchBar.svelte\",\"sources\":[\"SearchBar.svelte\"],\"sourcesContent\":[\"<script>\\r\\n  let query = \\\"\\\";\\r\\n\\r\\n</script>\\r\\n\\r\\n<form>\\r\\n  <input type=\\\"texte\\\" alt=\\\"Champ de recherche d'une archive\\\" value=\\\"\\\" placeholder=\\\"Entrez votre recherche\\\" />\\r\\n  <input type=\\\"button\\\" alt=\\\"Valider la recherche\\\" value=\\\"🔍\\\" />\\r\\n  <label for=\\\"search_filter_box\\\">Filtrer</label><input alt=\\\"Activer pour filtrer la recherche\\\" id=\\\"search_filter_box\\\" type=\\\"checkbox\\\" />\\r\\n  <div>\\r\\n    <input type=\\\"checkbox\\\" id=\\\"filtre_sauve\\\" alt=\\\"Inclure les sauvetages\\\" /><label for=\\\"filtre_sauve\\\" >Personnes sauvées</label>\\r\\n    <input type=\\\"checkbox\\\" id=\\\"filtre_sauveteur\\\" alt=\\\"Inclure les sauveteur\\\" /><label for=\\\"filtre_sauveteur\\\" >Sauveteur</label>\\r\\n    <input type=\\\"checkbox\\\" id=\\\"filtre_bateau\\\" /><label for=\\\"filtre_bateau\\\" >Bateau</label>\\r\\n    <input type=\\\"checkbox\\\" id=\\\"filtre_sauvetage\\\" /><label for=\\\"filtre_sauvetage\\\" >Sauvetage</label>\\r\\n  </div>\\r\\n</form>\\r\\n\\r\\n\\r\\n<style>\\r\\n  #search_filter_box + div{\\r\\n    display:none;\\r\\n  }\\r\\n  #search_filter_box:checked + div{\\r\\n    display: block;\\r\\n  }\\r\\n</style>\\r\\n\"],\"names\":[],\"mappings\":\"AAmBE,gCAAkB,CAAG,iBAAG,CAAC,AACvB,QAAQ,IAAI,AACd,CAAC,AACD,gCAAkB,QAAQ,CAAG,iBAAG,CAAC,AAC/B,OAAO,CAAE,KAAK,AAChB,CAAC\"}"
+	map: "{\"version\":3,\"file\":\"SearchBar.svelte\",\"sources\":[\"SearchBar.svelte\"],\"sourcesContent\":[\"<script>\\r\\n  import {navigate} from 'svelte-routing';\\r\\n  let query = \\\"\\\";\\r\\n\\r\\n  let filter = false;\\r\\n  let sauve = false;\\r\\n  let sauveteur = false;\\r\\n  let sauvetage = false;\\r\\n  let bateau = false;\\r\\n\\r\\n  function send(e){\\r\\n    let nb = 1*sauve+2*sauveteur+4*sauvetage+8*bateau;\\r\\n    navigate(\\\"/search/\\\"+encodeURI(query)+\\\"/\\\"+nb.toString())\\r\\n  }\\r\\n</script>\\r\\n\\r\\n<form>\\r\\n  <input type=\\\"texte\\\" alt=\\\"Champ de recherche d'une archive\\\" bind:value={query} placeholder=\\\"Entrez votre recherche\\\" />\\r\\n  <input type=\\\"button\\\" alt=\\\"Valider la recherche\\\" value=\\\"🔍\\\" on:click={send} />\\r\\n  <label for=\\\"search_filter_box\\\">Filtrer</label><input alt=\\\"Activer pour filtrer la recherche\\\" id=\\\"search_filter_box\\\" type=\\\"checkbox\\\" />\\r\\n  <div>\\r\\n    <input type=\\\"checkbox\\\" bind:value={sauve} id=\\\"filtre_sauve\\\" alt=\\\"Filtre: Inclure les sauvés\\\" /><label for=\\\"filtre_sauve\\\" >Personnes sauvées</label>\\r\\n    <input type=\\\"checkbox\\\" bind:value={sauveteur} id=\\\"filtre_sauveteur\\\" alt=\\\"Filtre: Inclure les sauveteur\\\" /><label for=\\\"filtre_sauveteur\\\" >Sauveteur</label>\\r\\n    <input type=\\\"checkbox\\\" bind:value={bateau} id=\\\"filtre_bateau\\\" alt=\\\"Filtre: Inclure les bateaux\\\" /><label for=\\\"filtre_bateau\\\" >Bateau</label>\\r\\n    <input type=\\\"checkbox\\\" bind:value={sauvetage} id=\\\"filtre_sauvetage\\\" alt=\\\"Filtre: Inclure les sauvetages\\\" /><label for=\\\"filtre_sauvetage\\\" >Sauvetage</label>\\r\\n  </div>\\r\\n</form>\\r\\n\\r\\n\\r\\n<style>\\r\\n  #search_filter_box + div{\\r\\n    display:none;\\r\\n  }\\r\\n  #search_filter_box:checked + div{\\r\\n    display: block;\\r\\n  }\\r\\n</style>\\r\\n\"],\"names\":[],\"mappings\":\"AA8BE,gCAAkB,CAAG,iBAAG,CAAC,AACvB,QAAQ,IAAI,AACd,CAAC,AACD,gCAAkB,QAAQ,CAAG,iBAAG,CAAC,AAC/B,OAAO,CAAE,KAAK,AAChB,CAAC\"}"
 };
 
 const SearchBar = create_ssr_component(($$result, $$props, $$bindings, slots) => {
+	let query = "";
+	let sauve = false;
+	let sauveteur = false;
+	let sauvetage = false;
+	let bateau = false;
+
 	$$result.css.add(css);
 
-	return `<form><input type="${"texte"}" alt="${"Champ de recherche d'une archive"}" value="${""}" placeholder="${"Entrez votre recherche"}">
+	return `<form><input type="${"texte"}" alt="${"Champ de recherche d'une archive"}" placeholder="${"Entrez votre recherche"}"${add_attribute("value", query, 0)}>
   <input type="${"button"}" alt="${"Valider la recherche"}" value="${"🔍"}">
   <label for="${"search_filter_box"}">Filtrer</label><input alt="${"Activer pour filtrer la recherche"}" id="${"search_filter_box"}" type="${"checkbox"}" class="${"svelte-biaex5"}">
-  <div class="${"svelte-biaex5"}"><input type="${"checkbox"}" id="${"filtre_sauve"}" alt="${"Inclure les sauvetages"}"><label for="${"filtre_sauve"}">Personnes sauvées</label>
-    <input type="${"checkbox"}" id="${"filtre_sauveteur"}" alt="${"Inclure les sauveteur"}"><label for="${"filtre_sauveteur"}">Sauveteur</label>
-    <input type="${"checkbox"}" id="${"filtre_bateau"}"><label for="${"filtre_bateau"}">Bateau</label>
-    <input type="${"checkbox"}" id="${"filtre_sauvetage"}"><label for="${"filtre_sauvetage"}">Sauvetage</label></div>
+  <div class="${"svelte-biaex5"}"><input type="${"checkbox"}" id="${"filtre_sauve"}" alt="${"Filtre: Inclure les sauvés"}"${add_attribute("value", sauve, 0)}><label for="${"filtre_sauve"}">Personnes sauvées</label>
+    <input type="${"checkbox"}" id="${"filtre_sauveteur"}" alt="${"Filtre: Inclure les sauveteur"}"${add_attribute("value", sauveteur, 0)}><label for="${"filtre_sauveteur"}">Sauveteur</label>
+    <input type="${"checkbox"}" id="${"filtre_bateau"}" alt="${"Filtre: Inclure les bateaux"}"${add_attribute("value", bateau, 0)}><label for="${"filtre_bateau"}">Bateau</label>
+    <input type="${"checkbox"}" id="${"filtre_sauvetage"}" alt="${"Filtre: Inclure les sauvetages"}"${add_attribute("value", sauvetage, 0)}><label for="${"filtre_sauvetage"}">Sauvetage</label></div>
 </form>`;
+});
+
+/* src\routes\Search.svelte generated by Svelte v3.44.2 */
+
+const Search = create_ssr_component(($$result, $$props, $$bindings, slots) => {
+	const query = "";
+	const filters = "0";
+	let reqdata = [];
+
+	function send(e) {
+		let f = filters.parseInt();
+		const filter_all = ["SAUVE", "SAUVETEUR", "SAUVETAGE", "BATEAU"];
+		let filter_tab = [];
+		let i;
+
+		for (i of filter_all) {
+			if (f % 2 != 1) filter_tab.push(i);
+			f = (f - f % 2) / 2;
+		}
+
+		let data = { types: filter_tab, search: query };
+
+		let option = {
+			method: 'POST', // *GET, POST, PUT, DELETE, etc.
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(data)
+		};
+
+		fetch("/api/search", option).then(function (res) {
+			console.log(res);
+		});
+	}
+
+	onMount(send);
+	if ($$props.query === void 0 && $$bindings.query && query !== void 0) $$bindings.query(query);
+	if ($$props.filters === void 0 && $$bindings.filters && filters !== void 0) $$bindings.filters(filters);
+
+	return `<div>${each(reqdata, dat => `<div><h1>${escape(dat.title)}</h1>
+      <p>${escape(dat.desc)}</p>
+    </div>`)}</div>`;
 });
 
 /* src\App.svelte generated by Svelte v3.44.2 */
@@ -762,6 +830,17 @@ const App = create_ssr_component(($$result, $$props, $$bindings, slots) => {
 ${validate_component(Router, "Router").$$render($$result, { url }, {}, {
 		default: () => `${validate_component(Route, "Route").$$render($$result, { path: "debug" }, {}, {
 			default: () => `${validate_component(SearchBar, "Searchbar").$$render($$result, {}, {}, {})}`
+		})}
+  ${validate_component(Route, "Route").$$render($$result, { path: "search/:query/:filters" }, {}, {
+			default: () => `${validate_component(Search, "Search").$$render(
+				$$result,
+				{
+					query: params.query,
+					filter: params.filters
+				},
+				{},
+				{}
+			)}`
 		})}`
 	})}`;
 });
