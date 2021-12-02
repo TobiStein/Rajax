@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form action="http://localhost:3000/api/search" method="POST">
+        <input type="text" name="name"/>
+    </form>
+    <script>
+        let data = {types:["BATEAU", "SAUVETAGE", "SAUVE"], search : "la recherche"};
+        let option = {
+            method: 'POST', // *GET, POST, PUT, DELETE, etc.
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        };
+        fetch("/api/search", option).then(function(response){
+            console.log(response);
+            location.reload(true);
+        });
+
+    </script>
+</body>
+</html>
