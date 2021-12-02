@@ -77,7 +77,6 @@ router.get("/query/*/*", (req, res) => {
     var id = parseInt(url_parse[url_parse.length - 1]);
     
     if (Number.isInteger(id) && type_available.includes(type)){
-        //res.status(200).json({type: type, id:id});
         var SQL = "SELECT * FROM";
         if (type == "bateau"){
             SQL += " BATEAU";
@@ -86,7 +85,7 @@ router.get("/query/*/*", (req, res) => {
         } else if (type == "personne"){
             SQL += " PERSONNE";
         }
-        SQL += " WHERE id = ?";
+        SQL += " WHERE id = ? AND waiting_valid=0";
 
         db.get(SQL, [id], (err, row) => {
             if (err) {
