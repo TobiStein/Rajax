@@ -34,4 +34,7 @@
   #search_filter_box:checked + div{
     display: block;
   }
+  input[type='checkbox'] {
+    display: none;
+  }
 </style>
