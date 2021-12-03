@@ -24,16 +24,16 @@ router.post("/search", (req, res) => {
         var SQL = undefined
         if (element[index_element] == "BATEAU"){
             var actual_type = "BATEAU";
-            var SQL = "SELECT id, Nom as title, Description as desc FROM BATEAU WHERE "
+            var SQL = "SELECT id, Nom as title, Description as desc FROM BATEAU WHERE waiting_valid = 0 AND ("
         } else if (element[index_element] == "SAUVE"){
             var actual_type = "PERSONNE";
-            var SQL = "SELECT PERSONNE.id, Nom as title, Prenom, Description as desc FROM PERSONNE, PERSONNE_ROLE WHERE PERSONNE_ROLE.id_pers = PERSONNE.id AND PERSONNE_ROLE.role = 'SAUVE' AND "
+            var SQL = "SELECT PERSONNE.id, Nom as title, Prenom, Description as desc FROM PERSONNE, PERSONNE_ROLE WHERE PERSONNE_ROLE.id_pers = PERSONNE.id AND PERSONNE_ROLE.role = 'SAUVE' AND waiting_valid = 0 AND ("
         } else if (element[index_element] == "SAUVETEUR"){
             var actual_type = "PERSONNE";
-            var SQL = "SELECT PERSONNE.id, Nom as title, Prenom, Description as desc FROM PERSONNE, PERSONNE_ROLE WHERE PERSONNE_ROLE.id_pers = PERSONNE.id AND PERSONNE_ROLE.role = 'SAUVETEUR' AND "
+            var SQL = "SELECT PERSONNE.id, Nom as title, Prenom, Description as desc FROM PERSONNE, PERSONNE_ROLE WHERE PERSONNE_ROLE.id_pers = PERSONNE.id AND PERSONNE_ROLE.role = 'SAUVETEUR' AND waiting_valid = 0 AND ("
         } else if (element[index_element] == "SAUVETAGE"){
             var actual_type = "SAUVETAGE";
-            var SQL = "SELECT id, Nom as title, Description as desc FROM EVENT WHERE "
+            var SQL = "SELECT id, Nom as title, Description as desc FROM EVENT WHERE waiting_valid = 0 AND ("
         }
         if (SQL){
 
@@ -42,6 +42,7 @@ router.post("/search", (req, res) => {
             }
 
             SQL = SQL.substring(0, SQL.length - 3);
+            SQL += ")";
 
             db.all(SQL, data.search, (err, rows) => {
                 if (err){
@@ -87,6 +88,7 @@ router.post("/search", (req, res) => {
 });
 
 router.post("/add/:type/", (req, res) => {
+    console.log("ok");
     if (req.params.type == "bateau"){
         let data = {
             nom : req.body.nom,
@@ -95,23 +97,36 @@ router.post("/add/:type/", (req, res) => {
         }
 
         db.run("INSERT INTO BATEAU (Nom, Description, Type, waiting_valid) VALUES (?, ?, ?, ?)", [data.nom, data.description, data.type, 1], (err) => {
-            if (err) {
-                throw err
-            }
-
-            console.log("ok");
+            if (err) { throw err }
             res.status(200).send("ok");
         })
     } else if (req.params.type == "sauvetage"){
         let data = {
             nom : req.body.nom,
             description : req.body.desc,
-            recit : req.body.recit,
+            moyen_tech : req.body.moyen_tech,
             date : req.body.date
         }
 
-    } else if (req.params.type == "personne"){
+        db.run("INSERT INTO EVENT (Nom, Description, moyen_tech, Date, Add_Date, waiting_valid) VALUES (?, ?, ?, ?, ?, ?)", [data.nom, data.description, data.moyen_tech, data.date, Date.now(), 1], (err) => {
+            if (err) { throw err }
+            console.log("ok");
+            res.status(200).send("ok");
+        })
 
+    } else if (req.params.type == "personne"){
+        let data = {
+            nom : req.body.nom,
+            nom : req.body.prenom,
+            description : req.body.desc,
+            naissance : req.body.date_naissance,
+        }
+
+        db.run("INSERT INTO PERSONNE (Nom, Prenom, Description, Date_naissance, waiting_valid) VALUES (?, ?, ?, ?, ?)", [data.nom, data.prenom, data.description, data.naissance, 1], (err) => {
+            if (err) { throw err }
+            console.log("ok");
+            res.status(200).send("ok");
+        });
     } else {
         res.status(404).send("404")
     };
@@ -172,6 +187,14 @@ router.get("/query/*/*", (req, res) => {
         res.status(404).send("404");
     }
 
+});
+
+router.get("/accept/:type/:id", (req, res) => {
+    let data = {
+        type : req.params.type,
+        id : req.params.id }
+
+    res.send("ok");    
 });
 
 module.exports = router;

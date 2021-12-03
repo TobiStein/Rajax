@@ -27,6 +27,6 @@ router.use("/admin/", (req, res, next) => {
     }
 
 
-})
+});
 
 module.exports = router;
