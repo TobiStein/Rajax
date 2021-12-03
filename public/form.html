@@ -7,11 +7,8 @@
     <title>Document</title>
 </head>
 <body>
-    <!--<form action="http://localhost:3000/api/search" method="POST">
-        <input type="text" name="name"/>
-    </form>--->
     <script>
-        let data = {types:["BATEAU", "SAUVETAGE", "SAUVE"], search : "rouge"};
+        let data = {types:["BATEAU", "SAUVETAGE", "SAUVE"], search : query};
         let option = {
             method: 'POST', // *GET, POST, PUT, DELETE, etc.
             headers: {
