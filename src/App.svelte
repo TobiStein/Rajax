@@ -7,6 +7,7 @@
   import EasterEgg from "./layout/EasterEgg.svelte";
   import Personnes from "./layout/Personnes.svelte";
   import Article from "./routes/Article.svelte";
+  import Voeux from "./layout/Voeux.svelte"
   export let url = "";
 </script>
 <Header />
@@ -14,4 +15,5 @@
   <Route path="article/:type/:id" let:params><Article artType={params.type} artId={params.id}/></Route>
   <Route path="search/:query/:filters" let:params><Search query={params.query} filter={params.filters}/></Route>
   <Route path="debug_arthaud"><EasterEgg /></Route>
+  <Route path="creer-voeux"><Voeux /></Route>
 </Router>
