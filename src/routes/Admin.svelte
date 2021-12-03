@@ -3,8 +3,18 @@
 
   let reqdata;
 
-  fetch("/api/admin/all",{method:"GET"}).then(console.log);
-
+  fetch("/api/admin/all",{method:"GET",
+  credentials: "same-origin"}).then((req)=>{
+    console.log(req);
+    req.json().then(json=>{
+      console.log(json);
+      reqdata = json;
+    });
+  });
+  function typingDat(tp){
+    if (tp == "SAUVE" || tp == "SAUVETEUR") return "personne";
+    return tp.toLowerCase();
+  }
 
 </script>
 
@@ -12,8 +22,8 @@
   {#if reqdata != null}
     {#each reqdata as dat}
       <div class="result">
-        <a href={`/article/${typingDat(dat.type)}/${dat.id}`}>{dat.title}</a>
-        <p>{dat.desc}</p>
+        <a href={`/article/${typingDat(dat.type)}/${dat.id}`}>{dat.Nom}</a>
+        <p>{dat.Description}</p>
       </div>
     {/each}
   {:else}
