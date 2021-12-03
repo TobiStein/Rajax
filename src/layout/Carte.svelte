@@ -1,6 +1,6 @@
 <script>
-  let Vfrom = "";
-  let Vto = "";
+  export let Vfrom = "";
+  export let Vto = "";
 </script>
 
 <div class="hero">
@@ -79,15 +79,9 @@
     </div>
 
   <div class="hero__content">
-    <h1>Mes meilleurs voeux !!</h1>
-    <p>Une année est passée sans que vous ayez été victime d'un naufrage, BRAVO !!</p>
-    <p>Fêtez cette survie en créant un message à envoyer à vos proches</p>
-    <form>
-        <label for="de">de:</label>
-        <input type="text" id="de" bind:value={Vfrom}>
-        <label for="a">à:</label>
-        <input type="text" id="a" bind:value={Vto}>
-    </form>
+    <h1>{Vfrom.toUpperCase()} Vous souhaite une bonne année{Vto.toUpperCase()}</h1>
+    <p>Bonne année, bonne santé meilleurs voeux</p>
+    <p>J'espère vous retrouver bientôt pour fêter ça autour d'une bouteille de champagne !!</p>
   </div>
 
 </div>
