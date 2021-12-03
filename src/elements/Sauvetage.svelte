@@ -1,9 +1,7 @@
 <script>
   export let personnes = "En chargement";
 
-  $:sauveteurs = linking(personnes,"SAUVETEUR");
-  $:sauve = linking(personnes,"SAUVE");
-
+  let sauveteur,sauve;
 
   function linking(sav,role){
     if (sav == "En chargement") return sav;
@@ -31,8 +29,8 @@
       <th>Moyens techniques utilisés</th>
     </tr>
     <tr>
-      <td>{$sauveteurs}</td>
-      <td>{$sauve}</td>
+      <td>{@html linking(personnes,"SAUVETEUR")}</td>
+      <td>{@html linking(personnes,"SAUVE")}</td>
       <td>{date}</td>
       <td>{moyen}</td>
     </tr>

@@ -6,7 +6,7 @@
 <table>
     <tr>
       <th>Nom</th>
-      <th>Date</th>
+      <th>Date de naissance</th>
     </tr>
     <tr>
       <td>{nom==null?"Inconnu":nom}</td>

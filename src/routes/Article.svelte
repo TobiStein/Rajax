@@ -11,6 +11,7 @@
   let date = "chargement...";
   let modele = "chargement...";
   let personnes = "chargement...";
+  let pesonnes = "chargement...";
   let moyen = "chargement...";
   let annee = "chargement...";
   let date_s = "chargement...";
@@ -33,8 +34,10 @@
         nom = json.Nom;
         date = json.date_naissance;
         date_s = json.Date;
+        pesonnes = json.pesonnes;
         personnes = json.implication;
         modele = json.Type;
+        moyen = json.moyen_tech;
       }).catch((error) => {
         gotError = true;
       });
@@ -56,7 +59,7 @@
       {#if artType=="personne"}
         <Personnes nom={nom} date={date} />
       {:else if artType=="sauvetage"}
-        <Sauvetage personnes={personnes} date={date} />
+        <Sauvetage personnes={pesonnes} date={date_s == null?"Inconnu":date_s} moyen={moyen == null?"Inconnu":moyen} />
       {:else if artType=="bateau"}
         <Bateaux nom={nom} modele={modele} annee={date_s} />
       {/if}
