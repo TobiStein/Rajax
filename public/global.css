@@ -7,27 +7,14 @@ html {
 body {
 	background-color: rgb(254,254,254);
 	margin: 0 auto;
-<<<<<<< HEAD
 	border-radius: 10%;
 	
-
     height: 80%;	
     border-left-width: 10%;
     margin-left: 10%;
     margin-right: 10%;
     padding-left: 5%;
     padding-right: 5%;
-=======
-
-
-    height: 100%;
-    border-left-width: 100px;
-    margin-left: 100px;
-    margin-right: 100px;
-    padding-left: 10px;
-    padding-right: 10px;
-	border-color: orange;
->>>>>>> 0007c9ba3b5d4e14bfbac0cbc245740220bc8b00
 
 
   	background-clip: content-box, padding-box;

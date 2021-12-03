@@ -6,9 +6,9 @@
   import EasterEgg from "./layout/EasterEgg.svelte";
   import Tibo from "./layout/Tibo.svelte";
   import Article from "./routes/Article.svelte";
-  import Bateaux from "./elements/Bateaux.svelte"
-  import Personnes from "./elements/Personnes.svelte"
-  import Sauvetage from "./elements/Sauvetage.svelte"
+  import Bateaux from "./elements/Bateaux.svelte";
+  import Personnes from "./elements/Personnes.svelte";
+  import Sauvetage from "./elements/Sauvetage.svelte";
   import Voeux from "./layout/Voeux.svelte";
   import Carte from "./layout/Carte.svelte";
   import Login from "./routes/Login.svelte";
