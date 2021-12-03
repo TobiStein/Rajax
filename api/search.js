@@ -13,7 +13,7 @@ let db = new sqlite3.Database('./bdd.db', (err) => {
 
 router.post("/search", (req, res) => {
     let resp = [];
-    console.log(req.body);
+    //console.log(req.body);  
     let data = {
         types : req.body.types,
         search : [req.body.search].concat(req.body.search.split(' '))
@@ -23,12 +23,16 @@ router.post("/search", (req, res) => {
         let element = data.types;
         var SQL = undefined
         if (element[index_element] == "BATEAU"){
+            var actual_type = "BATEAU";
             var SQL = "SELECT id, Nom as title, Description as desc FROM BATEAU WHERE "
         } else if (element[index_element] == "SAUVE"){
+            var actual_type = "PERSONNE";
             var SQL = "SELECT PERSONNE.id, Nom as title, Prenom, Description as desc FROM PERSONNE, PERSONNE_ROLE WHERE PERSONNE_ROLE.id_pers = PERSONNE.id AND PERSONNE_ROLE.role = 'SAUVE' AND "
         } else if (element[index_element] == "SAUVETEUR"){
+            var actual_type = "PERSONNE";
             var SQL = "SELECT PERSONNE.id, Nom as title, Prenom, Description as desc FROM PERSONNE, PERSONNE_ROLE WHERE PERSONNE_ROLE.id_pers = PERSONNE.id AND PERSONNE_ROLE.role = 'SAUVETEUR' AND "
         } else if (element[index_element] == "SAUVETAGE"){
+            var actual_type = "SAUVETAGE";
             var SQL = "SELECT id, Nom as title, Description as desc FROM EVENT WHERE "
         }
         if (SQL){
@@ -52,12 +56,11 @@ router.post("/search", (req, res) => {
                         delete elt.Prenom;
                     }
                     elt.type = element[index_element];
-
-                    //console.log(resp, elt)
+                    elt.actual_type = actual_type;
+                    
                     let pass = true;
                     for (var i = 0; i<resp.length && pass; i++){  // Eliminer les doublons
-                        if (resp[i].id === elt.id && resp[i].type === elt.type){
-                            console.log("ok");
+                        if (resp[i].id === elt.id && resp[i].actual_type === elt.actual_type){
                             pass = false;
                         }
                     }
