@@ -13,7 +13,7 @@ let db = new sqlite3.Database('./bdd.db', (err) => {
 
 router.get("/admin/all/", (req, res) =>{
     let resp = [];
-    db.all("SELECT * FROM BATEAU WHERE waiting_valid = 1", [], (err, rows) => {
+    db.all("SELECT * FROM BATEAU ", [], (err, rows) => {
         if (err) { throw err; }
 
         rows.forEach((elt) => {
@@ -22,14 +22,14 @@ router.get("/admin/all/", (req, res) =>{
         resp = resp.concat(rows);
         
 
-        db.all("SELECT * FROM PERSONNE WHERE waiting_valid = 1", [], (err, rows) => {
+        db.all("SELECT * FROM PERSONNE ", [], (err, rows) => {
             if (err) { throw err; }
             rows.forEach((elt) => {
                 elt.type = "PERSONNE";
             });
             resp = resp.concat(rows);
 
-            db.all("SELECT * FROM EVENT WHERE waiting_valid = 1", [], (err, rows) => {
+            db.all("SELECT * FROM EVENT ", [], (err, rows) => {
                 if (err) { throw err; }
                 
                 rows.forEach((elt) => {
@@ -238,6 +238,31 @@ router.get("/admin/accept/:type/:id", (req, res) => {
         })
     } else if (data.type == "personne"){
         db.run("UPDATE PERSONNE SET waiting_valid = 0 WHERE id = ?", [data.id], (err) => {
+            if (err) { throw err }
+            res.status(200).send("ok");
+        })
+    } else {
+        res.status(404).send("404");
+    }  
+});
+
+router.get("/admin/delete/:type/:id", (req, res) => {
+    let data = {
+        type : req.params.type,
+        id : parseInt(req.params.id)}
+    
+    if (data.type == "bateau"){
+        db.run("DELETE FROM BATEAU WHERE id = ?", [data.id], (err) => {
+            if (err) { throw err }
+            res.status(200).send("ok");
+        })
+    } else if (data.type == "sauvetage"){
+        db.run("DELETE FROM EVENT WHERE id = ?", [data.id], (err) => {
+            if (err) { throw err }
+            res.status(200).send("ok");
+        })
+    } else if (data.type == "personne"){
+        db.run("DELETE FROM PERSONNE WHERE id = ?", [data.id], (err) => {
             if (err) { throw err }
             res.status(200).send("ok");
         })
