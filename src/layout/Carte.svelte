@@ -79,7 +79,7 @@
     </div>
 
   <div class="hero__content">
-    <h1>{Vfrom.toUpperCase()} Vous souhaite une bonne année{Vto.toUpperCase()}</h1>
+    <h1>{Vfrom.toUpperCase()} Vous souhaite une bonne année {Vto.toUpperCase()}</h1>
     <p>Bonne année, bonne santé meilleurs voeux</p>
     <p>J'espère vous retrouver bientôt pour fêter ça autour d'une bouteille de champagne !!</p>
   </div>

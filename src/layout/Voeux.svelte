@@ -1,6 +1,6 @@
 <script>
-  let Vfrom = "";
-  let Vto = "";
+  let Vfrom = "ton ami";
+  let Vto = "toi";
 </script>
 
 <div class="hero">
@@ -88,6 +88,7 @@
         <label for="a">à:</label>
         <input type="text" id="a" bind:value={Vto}>
     </form>
+    <p class="lien">Lien à partager: <a href={`/voeux/${Vfrom}/${Vto}`}>{`${location.origin}/voeux/${Vfrom}/${Vto}`}</a></p>
   </div>
 
 </div>
@@ -103,11 +104,20 @@ h1 {
   text-shadow: 0px 3px 3px rgba(0, 0, 0, 0.66);
 }
 
-p {
+p:not(.lien) {
     color: white;
     text-align: center;
     margin: 30px;
     text-shadow: 0px 3px 3px rgba(0, 0, 0, 0.66);
+}
+
+p.lien{
+  color: red;
+  font-weight: bold;
+}
+
+p.lien a{
+  color: white;
 }
 
 form {
