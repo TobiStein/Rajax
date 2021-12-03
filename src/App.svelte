@@ -8,6 +8,9 @@
   import Tibo from "./layout/Tibo.svelte";
   import Article from "./routes/Article.svelte";
   import Voeux from "./layout/Voeux.svelte"
+  import Bateaux from "./elements/Bateaux.svelte"
+  import Personnes from "./elements/Personnes.svelte"
+  import Sauvetage from "./elements/Sauvetage.svelte"
   export let url = "";
 </script>
 <Header />
