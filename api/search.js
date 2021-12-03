@@ -13,7 +13,7 @@ let db = new sqlite3.Database('./bdd.db', (err) => {
 
 router.get("/admin/all/", (req, res) =>{
     let resp = [];
-    db.all("SELECT * FROM BATEAU WHERE waiting_valid = 1", [], (err, rows) => {
+    db.all("SELECT * FROM BATEAU ", [], (err, rows) => {
         if (err) { throw err; }
 
         rows.forEach((elt) => {
@@ -22,14 +22,14 @@ router.get("/admin/all/", (req, res) =>{
         resp = resp.concat(rows);
         
 
-        db.all("SELECT * FROM PERSONNE WHERE waiting_valid = 1", [], (err, rows) => {
+        db.all("SELECT * FROM PERSONNE ", [], (err, rows) => {
             if (err) { throw err; }
             rows.forEach((elt) => {
                 elt.type = "PERSONNE";
             });
             resp = resp.concat(rows);
 
-            db.all("SELECT * FROM EVENT WHERE waiting_valid = 1", [], (err, rows) => {
+            db.all("SELECT * FROM EVENT ", [], (err, rows) => {
                 if (err) { throw err; }
                 
                 rows.forEach((elt) => {
@@ -45,7 +45,8 @@ router.get("/admin/all/", (req, res) =>{
 
 router.post("/search", (req, res) => {
     let resp = [];
-    //console.log(req.body);  
+    //console.log(req.body);
+    req.body.search = req.body.search.toLowerCase();  
     let data = {
         types : req.body.types,
         search : [req.body.search].concat(req.body.search.split(' '))
@@ -70,7 +71,12 @@ router.post("/search", (req, res) => {
         if (SQL){
 
             for (var i=0; i<data.search.length; i++){
-                SQL += "lower(Nom || Description) LIKE '%' || ? || '%' OR "
+                if (element[index_element] == "SAUVE" || element[index_element] == "SAUVETEUR"){
+                    SQL += "lower(Nom || Prenom || Description) LIKE '%' || ? || '%' OR "
+                } else {
+                    SQL += "lower(Nom || Description) LIKE '%' || ? || '%' OR "
+                }
+                
             }
 
             SQL = SQL.substring(0, SQL.length - 3);
