@@ -1,7 +1,11 @@
-<p> TEST</p>
+<tibo/>
+
+<a href="tiboaveugle">coucou, clique moi dessus</a>
 
 <style>
-    p{
-        color: white;
+
+    a{
+        color: transparent ;
+        transform: scale(0);
     }
 </style>
