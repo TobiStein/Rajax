@@ -20,7 +20,7 @@ router.use((req, res, next) => {
 });
 
 router.use((req, res, next) => {
-  res.status(200).json({message: "Hello World"});
+  res.status(404).send("Introuvable");
 });
 
 module.exports = router;

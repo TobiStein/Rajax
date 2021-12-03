@@ -4,7 +4,7 @@
 
 <header>
     <img
-     src="img/corsaire.png"
+     src="/img/corsaire.png"
      alt="logo corsaire dunkerquois">
     <SearchBar />
 </header>
@@ -19,7 +19,4 @@
   align-items: center;
   padding: 8px;
 }
-
-  header img {
-  }
 </style>
