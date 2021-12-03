@@ -179,7 +179,7 @@ router.get("/query/*/*", (req, res) => {
         } else if (type == "personne"){
             SQL += " PERSONNE ";
         }
-        SQL += "WHERE id = ? AND waiting_valid = 0";
+        SQL += "WHERE id = ?wa";
 
         db.get(SQL, [id], (err, row) => {
             if (err) {

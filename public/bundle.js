@@ -2445,7 +2445,14 @@
     			t0 = claim_text(p_nodes, "Joyeuses fêtes");
     			p_nodes.forEach(detach);
     			t1 = claim_space(nodes);
-    			iframe = claim_element(nodes, "IFRAME", { width: true, height: true, src: true });
+
+    			iframe = claim_element(nodes, "IFRAME", {
+    				title: true,
+    				width: true,
+    				height: true,
+    				src: true
+    			});
+
     			var iframe_nodes = children(iframe);
     			iframe_nodes.forEach(detach);
     			t2 = claim_space(nodes);
@@ -2458,6 +2465,7 @@
     			this.h();
     		},
     		h() {
+    			attr(iframe, "title", "vidéo de noel de rick astley");
     			attr(iframe, "width", "800");
     			attr(iframe, "height", "600");
     			if (!src_url_equal(iframe.src, iframe_src_value = "https://www.youtube.com/embed/ucg3wvgk_Ac")) attr(iframe, "src", iframe_src_value);

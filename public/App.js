@@ -874,7 +874,7 @@ const EasterEgg = create_ssr_component(($$result, $$props, $$bindings, slots) =>
 
 const Tibo = create_ssr_component(($$result, $$props, $$bindings, slots) => {
 	return `<p>Joyeuses fêtes</p>
-    <iframe width="${"800"}" height="${"600"}" src="${"https://www.youtube.com/embed/ucg3wvgk_Ac"}"></iframe>
+    <iframe title="${"vidéo de noel de rick astley"}" width="${"800"}" height="${"600"}" src="${"https://www.youtube.com/embed/ucg3wvgk_Ac"}"></iframe>
 
     ${($$result.head += `<style>body {
         background-image: url("img/sapin1.jpg");
