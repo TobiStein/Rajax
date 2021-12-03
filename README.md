@@ -9,6 +9,6 @@ Nous avons tiré notre inspiration des défis liés à l'accessibilité. La plup
 Rendez-vous sur le lien http://rajax.tassageb.fr/loginadmin
 
 A droite du bouton valider se trouve un lien invisible, menant à notre easter-egg.
-S'il est possible d'y accéder par tout hasard, il est inévitable pour les personnes utilisant un plugin pour mal-voyant, puisque le lien sera lu par le narrateur.
+S'il est possible d'y accéder par tout hasard, il est inévitable pour les personnes utilisant un plugin d'audio description, puisque le lien sera lu par le narrateur.
 
-Voici notre petit cadeau de fin d'année pour nos amis mal-voyants (et tous ceux ayant trouvé l'easter-egg bien sûr) !
+Voici notre petit cadeau de fin d'année pour nos amis malvoyants (et tous ceux ayant trouvé l'easter-egg bien sûr) !
