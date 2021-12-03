@@ -27,8 +27,17 @@
     fetch("/api/search", option).then(function(res){
       res.json().then((json)=>{
         reqdata = json;
+      }).catch((error)=>{
+        reqdata = null;
       });
+    }).catch((error)=>{
+      reqdata = null;
     });
+  }
+
+  function typingDat(tp){
+    if (tp == "SAUVE" || tp == "SAUVETEUR") return "personne";
+    return tp.toLowerCase();
   }
 
   onMount(send);
@@ -36,10 +45,26 @@
 </script>
 
 <div>
-  {#each reqdata as dat}
-    <div>
-      <h1>{dat.title}</h1>
-      <p>{dat.desc}</p>
-    </div>
-  {/each}
+  {#if reqdata != null}
+    {#each reqdata as dat}
+      <div class="result">
+        <a href={`/article/${typingDat(dat.type)}/${dat.id}`}>{dat.title}</a>
+        <p>{dat.desc}</p>
+      </div>
+    {/each}
+  {:else}
+    <p>Recherche impossible</p>
+  {/if}
 </div>
+
+<style>
+  .result{
+    border: 0.5em solid #888;
+    padding:0.5em;
+    margin:0.5em;
+  }
+
+  .result > a{
+    font-size: 2em;
+  }
+</style>

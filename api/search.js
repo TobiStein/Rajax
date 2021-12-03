@@ -32,14 +32,14 @@ router.post("/search", (req, res) => {
             var SQL = "SELECT id, Nom as title, Description as desc FROM EVENT"
         }
         if (SQL){
-            SQL += " WHERE " 
+            SQL += " WHERE "
 
             for (var i=0; i<data.search.length; i++){
                 SQL += "lower(Nom || Description) LIKE '%' || ? || '%' OR "
             }
 
             SQL = SQL.substring(0, SQL.length - 3);
-             
+
             db.all(SQL, data.search, (err, rows) => {
                 if (err){
                     console.log("err", SQL);
@@ -52,7 +52,7 @@ router.post("/search", (req, res) => {
                     }
                     elt.type = element[index_element];
                 });
-                
+
                 resp = resp.concat(rows);
                 index_element++;
                 next(resp, index_element, data);
@@ -61,7 +61,7 @@ router.post("/search", (req, res) => {
             res.status(200).json(resp);
             console.log(resp);
         }
-        
+
     }
 
     next(resp, 0, data)
@@ -70,14 +70,44 @@ router.post("/search", (req, res) => {
     //res.send("Bonjour");
 });
 
+router.post("/add/:type/", (req, res) => {
+    if (req.params.type == "bateau"){
+        let data = {
+            nom : req.body.nom,
+            description : req.body.desc,
+            type : req.body.type,
+        }
+
+        db.run("INSERT INTO BATEAU (Nom, Description, Type, waiting_valid) VALUES (?, ?, ?, ?)", [data.nom, data.description, data.type, 1], (err) => {
+            if (err) {
+                throw err
+            }
+
+            console.log("ok");
+            res.status(200).send("ok");
+        })
+    } else if (req.params.type == "sauvetage"){
+        let data = {
+            nom : req.body.nom,
+            description : req.body.desc,
+            recit : req.body.recit,
+            date : req.body.date
+        }
+
+    } else if (req.params.type == "personne"){
+
+    } else {
+        res.status(404).send("404")
+    };
+});
+
 router.get("/query/*/*", (req, res) => {
     let url_parse = req.url.split("/");
     let type_available = ["bateau", "personne", "sauvetage"];
     var type = url_parse[url_parse.length - 2];
     var id = parseInt(url_parse[url_parse.length - 1]);
-    
+
     if (Number.isInteger(id) && type_available.includes(type)){
-        //res.status(200).json({type: type, id:id});
         var SQL = "SELECT * FROM";
         if (type == "bateau"){
             SQL += " BATEAU";
@@ -86,7 +116,7 @@ router.get("/query/*/*", (req, res) => {
         } else if (type == "personne"){
             SQL += " PERSONNE";
         }
-        SQL += " WHERE id = ?";
+        SQL += " WHERE id = ? AND waiting_valid=0";
 
         db.get(SQL, [id], (err, row) => {
             if (err) {
@@ -97,12 +127,12 @@ router.get("/query/*/*", (req, res) => {
             } else {
                 res.status(404).send("404");
             }
-            
+
         })
     } else {
         res.status(404).send("404");
     }
-    
+
 });
 
 module.exports = router;
