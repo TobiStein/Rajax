@@ -1,4 +1,3 @@
-<!-- App.svelte -->
 <script>
   import { Router, Link, Route } from "svelte-routing";
   import Searchbar from "./layout/SearchBar.svelte";
@@ -14,6 +13,7 @@
 </script>
 <Header />
 <Router url="{url}">
+  <Route path="/"><Search query="" filters="0"/></Route>
   <Route path="tiboaveugle"><Tibo /></Route>
   <Route path="debug"><Article text="# Je suis sympa non" /></Route>
   <Route path="article/:type/:id" let:params><Article artType={params.type} artId={params.id}/></Route>

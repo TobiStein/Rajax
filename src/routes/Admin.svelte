@@ -1,15 +1,16 @@
 <script>
-  import { onMount } from 'svelte';
 
   let reqdata;
-  let req2ta;
+
 
   fetch("/api/admin/all",{method:"GET",
   credentials: "same-origin"}).then((req)=>{
     console.log(req);
     req.json().then(json=>{
       console.log(json);
-      reqdata = json;
+      reqdata = json.sort((a,b)=>{
+        return a.waiting_valid<b.waiting_valid?1:-1;
+      });
     });
   });
 
@@ -42,11 +43,13 @@
 <div>
   {#if reqdata != null}
     {#each reqdata as dat}
-      <div class="result">
+      <div class={"result"+(dat.waiting_valid == 1?"":" accepted")}>
         <a href={`/article/${typingDat(dat.type)}/${dat.id}`}>{dat.Nom}</a>
         <p>{dat.Description}</p>
         <div>
+          {#if dat.waiting_valid}
           <button on:click={(e) => approve(e,`${typingDat(dat.type)}/${dat.id}`)} >Approuver</button>
+          {/if}
           <button on:click={(e) => remove(e,`${typingDat(dat.type)}/${dat.id}`)}>Supprimer</button>
         </div>
       </div>
@@ -65,5 +68,9 @@
 
   .result > a{
     font-size: 2em;
+  }
+
+  .accepted{
+    border-color: #0f0;
   }
 </style>
