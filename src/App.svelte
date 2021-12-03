@@ -13,11 +13,13 @@
   import Carte from "./layout/Carte.svelte";
   import Login from "./routes/Login.svelte";
   import Admin from "./routes/Admin.svelte";
+  import Add from "./routes/Add.svelte";
   export let url = "";
 </script>
 <Header />
 <Router url="{url}">
   <Route path="/"><Search query="" filters="0"/></Route>
+  <Route path="/add"><Add /></Route>
   <Route path="tiboaveugle"><Tibo /></Route>
   <Route path="debug"><Article text="# Je suis sympa non" /></Route>
   <Route path="article/:type/:id" let:params><Article artType={params.type} artId={params.id}/></Route>
