@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte';
 
-  export const query = "";
+  export let query = "";
   export let filters = "0";
 
   let reqdata = [];
