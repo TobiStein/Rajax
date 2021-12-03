@@ -6,7 +6,7 @@
   let sdate = "";
   let smoyen = "";
   let sdesc = "";
-  let bnom = "";
+  let pnom = "";
   let pprenom = "";
   let pdate = "";
   let pdesc = "";
@@ -56,27 +56,27 @@
 
 <form on:submit={e=>send(e,"bateau")}>
     <p>Ajouter Bateau</p>
-   <input type="text" bind:value={bnom} />
-   <input type="text" bind:value={btype} />
+   <input type="text" bind:value={bnom} alt="Nom" placeholder="Nom" />
+   <input type="text" bind:value={btype} alt="Type" placeholder="Type" />
    <textarea bind:value={bdesc}></textarea>
    <input type="submit" value="Valider"/>
 </form>
 
 <form on:submit={e=>send(e,"sauvetage")}>
-    <p>Ajouter Bateau</p>
-   <input type="text" bind:value={snom} />
-   <input type="text" bind:value={sdate} />
-   <input type="text" bind:value={smoyen} />
+    <p>Ajouter Sauvetage</p>
+   <input type="text" bind:value={snom} alt="Nom" placeholder="Nom"/>
+   <input type="text" bind:value={sdate} alt="Date" placeholder="Date"/>
+   <input type="text" bind:value={smoyen} alt="Moyen Technique" placeholder="Moyen Technique"/>
    <textarea bind:value={sdesc}></textarea>
    <input type="submit" value="Valider"/>
 </form>
 
 
 <form on:submit={e=>send(e,"personne")}>
-    <p>Ajouter Bateau</p>
-   <input type="text" bind:value={pnom} />
-   <input type="text" bind:value={pprenom} />
-   <input type="text" bind:value={pdate} />
+    <p>Ajouter Personne</p>
+   <input type="text" bind:value={pnom} alt="Personne" placeholder="Personne" />
+   <input type="text" bind:value={pprenom} alt="Prénom" placeholder="Prénom" />
+   <input type="text" bind:value={pdate} alt="Date" placeholder="Date" />
    <textarea bind:value={pdesc}></textarea>
    <input type="submit" value="Valider"/>
 </form>

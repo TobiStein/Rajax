@@ -18,7 +18,7 @@
 </script>
 <Header />
 <Router url="{url}">
-  <Route path="/"><Search query="" filters="0"/></Route>
+  <Route path="/"><a style="text-align:center;" href="/add">Ajouter</a><Search query="" filters="0"/></Route>
   <Route path="/add"><Add /></Route>
   <Route path="tiboaveugle"><Tibo /></Route>
   <Route path="debug"><Article text="# Je suis sympa non" /></Route>
