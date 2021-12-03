@@ -1,3 +1,7 @@
+# Installation
+commande `npm install` pour installer les dépendances
+puis `npm run prod` ou `npm run serve` (le second pour le developpement)
+
 # DEFI EASTER-EGG ASI
 
 ## Réflexion
@@ -12,3 +16,15 @@ A droite du bouton valider se trouve un lien invisible, menant à notre easter-e
 S'il est possible d'y accéder par tout hasard, il est inévitable pour les personnes utilisant un plugin d'audio description, puisque le lien sera lu par le narrateur.
 
 Voici notre petit cadeau de fin d'année pour nos amis malvoyants (et tous ceux ayant trouvé l'easter-egg bien sûr) !
+
+# NUIT de l'info : Défi principal
+
+## Accès à l'application web
+
+http://rajax.tassageb.fr/loginadmin
+*Identifiant* : Admin
+*Mot de passe* : Bonjour
+
+## Détail de l'application
+
+Application permettant de visualiser des informations sur les sauveteurs, bateaux et sauvetages pour le site des sauveteurs du dukenrquois, de saisir de nouvelles informations et de les confirmer.
