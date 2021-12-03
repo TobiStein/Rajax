@@ -1,6 +1,6 @@
 <script>
-  let Vfrom = "ton ami";
-  let Vto = "toi";
+  export let Vfrom = "";
+  export let Vto = "";
 </script>
 
 <div class="hero">
@@ -79,16 +79,9 @@
     </div>
 
   <div class="hero__content">
-    <h1>Mes meilleurs voeux !!</h1>
-    <p>Une année est passée sans que vous ayez été victime d'un naufrage, BRAVO !!</p>
-    <p>Fêtez cette survie en créant un message à envoyer à vos proches</p>
-    <form>
-        <label for="de">de:</label>
-        <input type="text" id="de" bind:value={Vfrom}>
-        <label for="a">à:</label>
-        <input type="text" id="a" bind:value={Vto}>
-    </form>
-    <p class="lien">Lien à partager: <a href={`/voeux/${Vfrom}/${Vto}`}>{`${location.origin}/voeux/${Vfrom}/${Vto}`}</a></p>
+    <h1>{Vfrom.toUpperCase()} Vous souhaite une bonne année {Vto.toUpperCase()}</h1>
+    <p>Bonne année, bonne santé meilleurs voeux</p>
+    <p>J'espère vous retrouver bientôt pour fêter ça autour d'une bouteille de champagne !!</p>
   </div>
 
 </div>
@@ -104,20 +97,11 @@ h1 {
   text-shadow: 0px 3px 3px rgba(0, 0, 0, 0.66);
 }
 
-p:not(.lien) {
+p {
     color: white;
     text-align: center;
     margin: 30px;
     text-shadow: 0px 3px 3px rgba(0, 0, 0, 0.66);
-}
-
-p.lien{
-  color: red;
-  font-weight: bold;
-}
-
-p.lien a{
-  color: white;
 }
 
 form {
