@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
 
   export const query = "";
-  export const filters = "0";
+  export let filters = "0";
 
   let reqdata = [];
 
@@ -12,11 +12,14 @@
     let filter_tab = [];
     let i;
     for (i of filter_all){
-      if (f%2 != 1) filter_tab.push(i)
+      if (filters == "0" || f%2 == 1) filter_tab.push(i);
       f = (f-f%2)/2;
     }
 
     let data = {types:filter_tab, search : query};
+
+    console.log(data);
+
     let option = {
         method: 'POST', // *GET, POST, PUT, DELETE, etc.
         headers: {

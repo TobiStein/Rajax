@@ -5,4 +5,7 @@
 
 </script>
 
+<nav>
+  <slot></slot>
+</nav>
 <div>{@html marked(text)}</div>
