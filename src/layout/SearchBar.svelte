@@ -42,11 +42,11 @@
   }*/
   input[type='checkbox'] {
     display: none;
-  }/*
+  }
 
   input[type='checkbox']:checked + label{
     text-decoration: underline;
-  }*/
+  }
 
   @import url(https://fonts.googleapis.com/css?family=Open+Sans);
 

@@ -20,7 +20,7 @@ router.get("/admin/all/", (req, res) =>{
             elt.type = "BATEAU";
         });
         resp = resp.concat(rows);
-        
+
 
         db.all("SELECT * FROM PERSONNE ", [], (err, rows) => {
             if (err) { throw err; }
@@ -31,7 +31,7 @@ router.get("/admin/all/", (req, res) =>{
 
             db.all("SELECT * FROM EVENT ", [], (err, rows) => {
                 if (err) { throw err; }
-                
+
                 rows.forEach((elt) => {
                     elt.type = "SAUVETAGE";
                 });
@@ -46,7 +46,7 @@ router.get("/admin/all/", (req, res) =>{
 router.post("/search", (req, res) => {
     let resp = [];
     //console.log(req.body);
-    req.body.search = req.body.search.toLowerCase();  
+    req.body.search = req.body.search.toLowerCase();
     let data = {
         types : req.body.types,
         search : [req.body.search].concat(req.body.search.split(' '))
@@ -76,7 +76,7 @@ router.post("/search", (req, res) => {
                 } else {
                     SQL += "lower(Nom || Description) LIKE '%' || ? || '%' OR "
                 }
-                
+
             }
 
             SQL = SQL.substring(0, SQL.length - 3);
@@ -96,7 +96,7 @@ router.post("/search", (req, res) => {
                     }
                     elt.type = element[index_element];
                     elt.actual_type = actual_type;
-                    
+
                     let pass = true;
                     for (var i = 0; i<resp.length && pass; i++){  // Eliminer les doublons
                         if (resp[i].id === elt.id && resp[i].actual_type === elt.actual_type){
@@ -155,7 +155,7 @@ router.post("/add/:type/", (req, res) => {
     } else if (req.params.type == "personne"){
         let data = {
             nom : req.body.nom,
-            nom : req.body.prenom,
+            prenom : req.body.prenom,
             description : req.body.desc,
             naissance : req.body.date_naissance,
         }
@@ -215,7 +215,7 @@ router.get("/query/*/*", (req, res) => {
                         res.status(200).json(row);
                     });
                 }
-                
+
             } else {
                 res.status(404).send("404");
             }
@@ -231,7 +231,7 @@ router.get("/admin/accept/:type/:id", (req, res) => {
     let data = {
         type : req.params.type,
         id : parseInt(req.params.id)}
-    
+
     if (data.type == "bateau"){
         db.run("UPDATE BATEAU SET waiting_valid = 0 WHERE id = ?", [data.id], (err) => {
             if (err) { throw err }
@@ -249,14 +249,14 @@ router.get("/admin/accept/:type/:id", (req, res) => {
         })
     } else {
         res.status(404).send("404");
-    }  
+    }
 });
 
 router.get("/admin/delete/:type/:id", (req, res) => {
     let data = {
         type : req.params.type,
         id : parseInt(req.params.id)}
-    
+
     if (data.type == "bateau"){
         db.run("DELETE FROM BATEAU WHERE id = ?", [data.id], (err) => {
             if (err) { throw err }
@@ -274,7 +274,7 @@ router.get("/admin/delete/:type/:id", (req, res) => {
         })
     } else {
         res.status(404).send("404");
-    }  
+    }
 });
 
 module.exports = router;
