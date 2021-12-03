@@ -18,8 +18,8 @@
 </script>
 
 <form on:submit={send} >
-  <input type="texte" alt="Champ de recherche d'une archive" bind:value={query} placeholder="Entrez votre recherche" />
-  <input type="button" alt="Valider la recherche" value="🔍" on:click={send} />
+  <input type="texte" alt="Champ de recherche d'une archive" class="searchTerm" bind:value={query} placeholder="Entrez votre recherche" />
+  <input type="button" class="searchButton" alt="Valider la recherche" value="🔍" on:click={send} />
   <label for="search_filter_box">Filtrer</label><input alt="Activer pour filtrer la recherche" bind:checked={filter} id="search_filter_box" type="checkbox" />
   <div>
     <input type="checkbox" bind:checked={sauve} id="filtre_sauve" alt="Filtre: Inclure les sauvés" /><label for="filtre_sauve" >Personnes sauvées</label>
@@ -36,16 +36,58 @@
   }
   #search_filter_box:checked + div{
     display: block;
-  }
+  }/*
   input{
     font-size: 4vh;
-  }
+  }*/
   input[type='checkbox'] {
     display: none;
-  }
+  }/*
 
   input[type='checkbox']:checked + label{
     text-decoration: underline;
-  }
+  }*/
 
+  @import url(https://fonts.googleapis.com/css?family=Open+Sans);
+
+
+.search {
+  width: 100%;
+  position: relative;
+  display: flex;
+}
+
+.searchTerm {
+  width: 70%;
+  border: 3px solid rgb(146,220,253);
+  padding: 3%;
+  height: 30%;
+  border-radius: 5px 0 0 5px;
+  outline: none;
+  color: #9DBFAF;
+}
+
+.searchTerm:focus{
+  color: rgb(146,220,253);
+}
+
+.searchButton {
+  width: 40px;
+  height: 36px;
+  border: 1px solid rgb(146,220,253);
+  background: rgb(146,220,253);
+  text-align: center;
+  color: #fff;
+  border-radius: 0 5px 5px 0;
+  cursor: pointer;
+}
+
+/*Resize the wrap to see the search bar change!*/
+.wrap{
+  width: 30%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
 </style>
