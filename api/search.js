@@ -13,7 +13,7 @@ let db = new sqlite3.Database('./bdd.db', (err) => {
 
 router.get("/admin/all/", (req, res) =>{
     let resp = [];
-    db.all("SELECT * FROM BATEAU WHERE waiting_valid = 1", [], (err, rows) => {
+    db.all("SELECT * FROM BATEAU ", [], (err, rows) => {
         if (err) { throw err; }
 
         rows.forEach((elt) => {
@@ -22,14 +22,14 @@ router.get("/admin/all/", (req, res) =>{
         resp = resp.concat(rows);
         
 
-        db.all("SELECT * FROM PERSONNE WHERE waiting_valid = 1", [], (err, rows) => {
+        db.all("SELECT * FROM PERSONNE ", [], (err, rows) => {
             if (err) { throw err; }
             rows.forEach((elt) => {
                 elt.type = "PERSONNE";
             });
             resp = resp.concat(rows);
 
-            db.all("SELECT * FROM EVENT WHERE waiting_valid = 1", [], (err, rows) => {
+            db.all("SELECT * FROM EVENT ", [], (err, rows) => {
                 if (err) { throw err; }
                 
                 rows.forEach((elt) => {
