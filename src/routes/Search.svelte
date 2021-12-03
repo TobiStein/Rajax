@@ -62,9 +62,12 @@
 
 <style>
   .result{
-    border: 0.5em solid #888;
+    border: 0.5em solid #87CEFA;
     padding:0.5em;
     margin:0.5em;
+    border-radius: 15px;
+    height:30vh;
+    overflow-y: hidden;
   }
 
   .result > a{
