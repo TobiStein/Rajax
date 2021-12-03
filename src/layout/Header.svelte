@@ -19,7 +19,4 @@
   align-items: center;
   padding: 8px;
 }
-
-  header img {
-  }
 </style>

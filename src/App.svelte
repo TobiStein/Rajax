@@ -9,6 +9,7 @@
   import Article from "./elements/Article.svelte";
   import Tibo from "./layout/Tibo.svelte";
   import Article from "./routes/Article.svelte";
+  import Voeux from "./layout/Voeux.svelte"
   export let url = "";
 </script>
 <Header />
@@ -18,4 +19,5 @@
   <Route path="article/:type/:id" let:params><Article artType={params.type} artId={params.id}/></Route>
   <Route path="search/:query/:filters" let:params><Search query={params.query} filters={params.filters}/></Route>
   <Route path="debug_arthaud"><EasterEgg /></Route>
+  <Route path="creer-voeux"><Voeux /></Route>
 </Router>
