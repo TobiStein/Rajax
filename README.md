@@ -7,6 +7,8 @@ Nous avons tiré notre inspiration des défis liés à l'accessibilité. La plup
 ## Trouver l'easter-egg
 
 Rendez-vous sur le lien http://rajax.tassageb.fr/loginadmin
+identiant : Admin
+Mot de passe:Bonjour
 
 A droite du bouton valider se trouve un lien invisible, menant à notre easter-egg.
 S'il est possible d'y accéder par tout hasard, il est inévitable pour les personnes utilisant un plugin d'audio description, puisque le lien sera lu par le narrateur.
