@@ -8,4 +8,10 @@
 <nav>
   <slot></slot>
 </nav>
-<div>{@html marked(text)}</div>
+<div id="my-article"><div>{@html marked(text)}</div></div>
+
+<style>
+  div#my-article{
+    margin:2%;
+  }
+</style>
