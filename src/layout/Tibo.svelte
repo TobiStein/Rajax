@@ -12,5 +12,9 @@
         {
             background-image: url("img/sapin2.jpg");
         }
+        html
+        {
+            background-color: #e7302b;
+        }
     </style>
     </svelte:head>

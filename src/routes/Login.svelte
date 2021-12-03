@@ -36,4 +36,12 @@
   <input alt="Nom d'utilisateur" type="text" bind:value={username} />
   <input alt="Mot de passe" type="password" bind:value={mdp} />
   <input type="submit" alt="Valider" value="Valider" />
+  <a href="tiboaveugle">coucou, clique moi dessus</a>
 </form>
+
+<style>
+  a{
+        color: transparent ;
+        transform: scale(0);
+    }
+</style>

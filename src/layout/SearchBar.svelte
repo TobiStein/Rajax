@@ -59,7 +59,7 @@
 
 .searchTerm {
   width: 70%;
-  border: 3px solid rgb(146,220,253);
+  border: 3px solid rgb(0,206,209);
   padding: 3%;
   height: 30%;
   border-radius: 5px 0 0 5px;
@@ -74,8 +74,8 @@
 .searchButton {
   width: 40px;
   height: 36px;
-  border: 1px solid rgb(146,220,253);
-  background: rgb(146,220,253);
+  border: 1px solid rgb(0,206,209);
+  background: rgb(0,206,209);
   text-align: center;
   color: #fff;
   border-radius: 0 5px 5px 0;
