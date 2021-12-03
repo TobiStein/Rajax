@@ -11,6 +11,38 @@ let db = new sqlite3.Database('./bdd.db', (err) => {
 
 });
 
+router.get("/admin/all/", (req, res) =>{
+    let resp = [];
+    db.all("SELECT * FROM BATEAU WHERE waiting_valid = 1", [], (err, rows) => {
+        if (err) { throw err; }
+
+        rows.forEach((elt) => {
+            elt.type = "BATEAU";
+        });
+        resp = resp.concat(rows);
+        
+
+        db.all("SELECT * FROM PERSONNE WHERE waiting_valid = 1", [], (err, rows) => {
+            if (err) { throw err; }
+            rows.forEach((elt) => {
+                elt.type = "PERSONNE";
+            });
+            resp = resp.concat(rows);
+
+            db.all("SELECT * FROM EVENT WHERE waiting_valid = 1", [], (err, rows) => {
+                if (err) { throw err; }
+                
+                rows.forEach((elt) => {
+                    elt.type = "SAUVETAGE";
+                });
+                resp = resp.concat(rows);
+                res.status(200).json(resp);
+            });
+        });
+
+    });
+})
+
 router.post("/search", (req, res) => {
     let resp = [];
     //console.log(req.body);  
@@ -147,7 +179,7 @@ router.get("/query/*/*", (req, res) => {
         } else if (type == "personne"){
             SQL += " PERSONNE ";
         }
-        SQL += "WHERE id = ? AND waiting_valid = 0";
+        SQL += "WHERE id = ?";
 
         db.get(SQL, [id], (err, row) => {
             if (err) {
@@ -189,12 +221,54 @@ router.get("/query/*/*", (req, res) => {
 
 });
 
-router.get("/accept/:type/:id", (req, res) => {
+router.get("/admin/accept/:type/:id", (req, res) => {
     let data = {
         type : req.params.type,
-        id : req.params.id }
+        id : parseInt(req.params.id)}
+    
+    if (data.type == "bateau"){
+        db.run("UPDATE BATEAU SET waiting_valid = 0 WHERE id = ?", [data.id], (err) => {
+            if (err) { throw err }
+            res.status(200).send("ok");
+        })
+    } else if (data.type == "sauvetage"){
+        db.run("UPDATE EVENT SET waiting_valid = 0 WHERE id = ?", [data.id], (err) => {
+            if (err) { throw err }
+            res.status(200).send("ok");
+        })
+    } else if (data.type == "personne"){
+        db.run("UPDATE PERSONNE SET waiting_valid = 0 WHERE id = ?", [data.id], (err) => {
+            if (err) { throw err }
+            res.status(200).send("ok");
+        })
+    } else {
+        res.status(404).send("404");
+    }  
+});
 
-    res.send("ok");    
+router.get("/admin/delete/:type/:id", (req, res) => {
+    let data = {
+        type : req.params.type,
+        id : parseInt(req.params.id)}
+    
+    if (data.type == "bateau"){
+        db.run("DELETE FROM BATEAU WHERE id = ?", [data.id], (err) => {
+            if (err) { throw err }
+            res.status(200).send("ok");
+        })
+    } else if (data.type == "sauvetage"){
+        db.run("DELETE FROM EVENT WHERE id = ?", [data.id], (err) => {
+            if (err) { throw err }
+            res.status(200).send("ok");
+        })
+    } else if (data.type == "personne"){
+        db.run("DELETE FROM PERSONNE WHERE id = ?", [data.id], (err) => {
+            if (err) { throw err }
+            res.status(200).send("ok");
+        })
+    } else {
+        res.status(404).send("404");
+    }  
 });
 
 module.exports = router;

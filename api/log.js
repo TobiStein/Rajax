@@ -20,7 +20,7 @@ router.use("/admin/", (req, res, next) => {
         console.log(req.body);
         if (req.body.log_id == user.id && req.body.log_pswd == user.pswd){
             req.session.log = true;
-            next();
+            res.send("Connected");
         } else {
             res.status(403).send("Interdit");
         }
