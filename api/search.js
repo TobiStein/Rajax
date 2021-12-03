@@ -246,4 +246,29 @@ router.get("/admin/accept/:type/:id", (req, res) => {
     }  
 });
 
+router.get("/admin/delete/:type/:id", (req, res) => {
+    let data = {
+        type : req.params.type,
+        id : parseInt(req.params.id)}
+    
+    if (data.type == "bateau"){
+        db.run("DELETE FROM BATEAU WHERE id = ?", [data.id], (err) => {
+            if (err) { throw err }
+            res.status(200).send("ok");
+        })
+    } else if (data.type == "sauvetage"){
+        db.run("DELETE FROM EVENT WHERE id = ?", [data.id], (err) => {
+            if (err) { throw err }
+            res.status(200).send("ok");
+        })
+    } else if (data.type == "personne"){
+        db.run("DELETE FROM PERSONNE WHERE id = ?", [data.id], (err) => {
+            if (err) { throw err }
+            res.status(200).send("ok");
+        })
+    } else {
+        res.status(404).send("404");
+    }  
+});
+
 module.exports = router;
