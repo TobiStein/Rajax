@@ -11,6 +11,38 @@ let db = new sqlite3.Database('./bdd.db', (err) => {
 
 });
 
+router.get("/admin/all/", (req, res) =>{
+    let resp = [];
+    db.all("SELECT * FROM BATEAU WHERE waiting_valid = 1", [], (err, rows) => {
+        if (err) { throw err; }
+
+        rows.forEach((elt) => {
+            elt.type = "BATEAU";
+        });
+        resp = resp.concat(rows);
+        
+
+        db.all("SELECT * FROM PERSONNE WHERE waiting_valid = 1", [], (err, rows) => {
+            if (err) { throw err; }
+            rows.forEach((elt) => {
+                elt.type = "PERSONNE";
+            });
+            resp = resp.concat(rows);
+
+            db.all("SELECT * FROM EVENT WHERE waiting_valid = 1", [], (err, rows) => {
+                if (err) { throw err; }
+                
+                rows.forEach((elt) => {
+                    elt.type = "SAUVETAGE";
+                });
+                resp = resp.concat(rows);
+                res.status(200).json(resp);
+            });
+        });
+
+    });
+})
+
 router.post("/search", (req, res) => {
     let resp = [];
     //console.log(req.body);  
@@ -189,12 +221,29 @@ router.get("/query/*/*", (req, res) => {
 
 });
 
-router.get("/accept/:type/:id", (req, res) => {
+router.get("/admin/accept/:type/:id", (req, res) => {
     let data = {
         type : req.params.type,
-        id : req.params.id }
-
-    res.send("ok");    
+        id : parseInt(req.params.id)}
+    
+    if (data.type == "bateau"){
+        db.run("UPDATE BATEAU SET waiting_valid = 0 WHERE id = ?", [data.id], (err) => {
+            if (err) { throw err }
+            res.status(200).send("ok");
+        })
+    } else if (data.type == "sauvetage"){
+        db.run("UPDATE EVENT SET waiting_valid = 0 WHERE id = ?", [data.id], (err) => {
+            if (err) { throw err }
+            res.status(200).send("ok");
+        })
+    } else if (data.type == "personne"){
+        db.run("UPDATE PERSONNE SET waiting_valid = 0 WHERE id = ?", [data.id], (err) => {
+            if (err) { throw err }
+            res.status(200).send("ok");
+        })
+    } else {
+        res.status(404).send("404");
+    }  
 });
 
 module.exports = router;
